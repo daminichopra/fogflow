@@ -65,6 +65,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		// Add upsert Api
 		rest.Post("/ngsi-ld/v1/entityOperations/upsert", broker.LDUpdateContext),
+		rest.Post("/ngsi-ld/v1/entityOperations/upsert/", broker.LDUpdateContext),
 		//create and update
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
 
@@ -330,9 +331,22 @@ func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request)
 }
 
 func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
+	fmt.Println("This is get by ENtityd")
 	var eid = r.PathParam("eid")
+	var newEid string
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json" || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*" {
-		entity := apisrv.broker.ldGetEntity(eid)
+		if r.Header.Get("fiware-service") != "" {
+			newEid =  eid + "." + r.Header.Get("fiware-service")
+			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+		} else {
+			newEid =  eid + "." + "default"
+		}
+
+		if r.Header.Get("fiware-servicepath") != "" {
+			w.Header().Set("fiware-servicepath", r.Header.Get("fiware-servicepath"))
+		}
+		fmt.Println("newEid",newEid)
+		entity := apisrv.broker.ldGetEntity(newEid)
 		if entity != nil {
 			if accept == "application/json" || accept == " " {
 				w.Header().Set("Content-Type", "application/json")

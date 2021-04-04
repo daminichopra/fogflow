@@ -1872,7 +1872,6 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
 	if err != nil {
-		w.WriteHeader(500)
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	} else {
@@ -1891,19 +1890,26 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 		for _, ctx := range LDupdateCtxReq {
 			var context []interface{}
-			contextInPayload := true
-			//Get Link header if present
+			contextInPayload := false
+			cType := r.Header.Get("Content-Type")
+			cTypeInLower := strings.ToLower(cType)
 			Link := r.Header.Get("Link")
-			if link := r.Header.Get("Link"); link != "" {
-				contextInPayload = false                    // Context in Link header
-				linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-				if linkMap["rel"] != DEFAULT_CONTEXT {
-				}
+			//if Link == "" {
+			//	fmt.Println("Link is blank")
+			//}
+			if cTypeInLower == "application/ld+json" {
+				contextInPayload = true
+			} else {
+				/*if link := r.Header.Get("Link"); link != "" {
+					linkMap := tb.extractLinkHeaderFields(link)
+					if linkMap["rel"] != DEFAULT_CONTEXT {
+					}
+				}*/
+				fmt.Println("Adding default header")
+				context = append(context, DEFAULT_CONTEXT)
 			}
-			context = append(context, DEFAULT_CONTEXT)
-
-			//Get a resolved object ([]interface object)
 			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
+			fmt.Println("err2", err)
 			if err != nil {
 
 				if err.Error() == "EmptyPayload!" {
@@ -1922,6 +1928,12 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				if err.Error() == "Type can not be nil!" {
 					problemSet := ProblemDetails{}
 					problemSet.Details = "Type can not be nil!"
+					res.Errors = append(res.Errors, problemSet)
+					continue
+				}
+				if err.Error() == "@context is Empty" {
+					problemSet := ProblemDetails{}
+					problemSet.Details = "@context can not be nil if Content-Type is application/ld+json"
 					res.Errors = append(res.Errors, problemSet)
 					continue
 				}
@@ -1948,6 +1960,14 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					}
+					fiware := FiwareHeaderCheck(r.Header.Get("fiware-service"),r.Header.Get("fiware-servicepath"))
+					if fiware == true {
+						newId  :=	deSerializedEntity["id"].(string)+ "." + r.Header.Get("fiware-service")
+						deSerializedEntity["id"] = newId
+					} else {
+						newId := deSerializedEntity["id"].(string) + "." + "default"
+						deSerializedEntity["id"] = newId
+					}
 					//deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
@@ -1971,7 +1991,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 	}
 }
-
 // Create an NGSI-LD Entity
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	//Also allow the header to json+ld for specific cases
@@ -2240,7 +2259,12 @@ func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
 	tb.ldEntities_lock.RLock()
 	if entity := tb.ldEntities[eid]; entity != nil {
 		tb.ldEntities_lock.RUnlock()
-		compactEntity := tb.createOriginalPayload(entity)
+		resultEntity := entity.(map[string]interface{})
+		id := resultEntity["id"].(string)
+		idSplit := strings.Split(id, ".")
+		actualId := idSplit[0]
+		resultEntity["id"] = actualId
+		compactEntity := tb.createOriginalPayload(resultEntity)
 		return compactEntity
 	} else {
 		tb.ldEntities_lock.RUnlock()
@@ -2374,7 +2398,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				} else {
 					deSerializedSubscription.Subscriber.RequireReliability = false
 				}
-				// save subscription
+				// save subscription 
 				tb.createSubscription(&deSerializedSubscription)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")
@@ -2423,7 +2447,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 		tb.subLinks_lock.Unlock()
 		if alreadyBack == true {
 			INFO.Println("========forward the availability notify that arrived earlier===========")
-			tb.handleNGSI9Notify(subReq.Id, notifyMessage)
+			tb.handleNGSILDNotify(subReq.Id, notifyMessage)
 
 			tb.subLinks_lock.Lock()
 			delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)
@@ -2478,24 +2502,15 @@ func (tb *ThinBroker) ExpandPayload(ctx interface{}, context []interface{}, cont
 				err := errors.New("Id can not be nil!")
 				return nil, err
 			}
-			ownerURL := tb.queryOwnerOfLDEntity(entityId)
-			if ownerURL == tb.MyURL {
-				/*tb.ldEntities_lock.RLock()
-				if _, ok := tb.ldEntities[entityId]; ok == true {
-					fmt.Println("Already exists here...!!")
-					tb.ldEntities_lock.RUnlock()
-					err := errors.New("AlreadyExists!")
-					fmt.Println("Error: ", err.Error())
+			if contextInPayload == true {
+				if Context := itemsMap["@context"]; Context == nil {
+					err := errors.New("@context is Empty")
 					return nil, err
 				}
-				tb.ldEntities_lock.RUnlock()*/
-			}
-			if ownerURL != tb.MyURL {
-				/*ownerURL = strings.TrimSuffix(ownerURL, "/ngsi10")
-				link := r.Header.Get("Link") // Pick link header if present
-				fmt.Println("Here 1..., link sending to remote broker:", link, "\nOwner URL:", ownerURL, "\nMy URL:", tb.MyURL)
-				err := tb.updateLDContextElement2RemoteSite(itemsMap, ownerURL, link)
-				return nil, err*/
+				if Context := itemsMap["@context"].([]interface{}); len(Context) == 0 {
+					err := errors.New("@context is Empty")
+					return nil, err
+				}
 			}
 		}
 
