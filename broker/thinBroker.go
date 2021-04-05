@@ -2260,9 +2260,7 @@ func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
 	if entity := tb.ldEntities[eid]; entity != nil {
 		tb.ldEntities_lock.RUnlock()
 		resultEntity := entity.(map[string]interface{})
-		id := resultEntity["id"].(string)
-		idSplit := strings.Split(id, ".")
-		actualId := idSplit[0]
+		actualId := getActualEntity(resultEntity)
 		resultEntity["id"] = actualId
 		compactEntity := tb.createOriginalPayload(resultEntity)
 		return compactEntity
@@ -3272,20 +3270,24 @@ func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string, req inter
 	return nil
 }
 
-func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string) []interface{} {
+func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService string) []interface{} {
 	var entities []interface{}
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
-		allExist := true
-		for _, attr := range attrs {
-			if _, ok := entityMap[attr]; ok != true {
-				allExist = false
+		if strings.HasSuffix(entityMap["id"].(string),fiwareService) == true {
+			allExist := true
+			for _, attr := range attrs {
+				if _, ok := entityMap[attr]; ok != true {
+					allExist = false
+				}
 			}
-		}
-		if allExist == true {
-			compactEntity := tb.createOriginalPayload(entity)
-			entities = append(entities, compactEntity)
+			if allExist == true {
+				actualEId := getActualEntity(entityMap)
+				entityMap["id"] = actualEId
+				compactEntity := tb.createOriginalPayload(entityMap)
+				entities = append(entities, compactEntity)
+			}
 		}
 	}
 	tb.ldEntities_lock.Unlock()
@@ -3309,7 +3311,7 @@ func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []interface{}
 	return entities
 }
 
-func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]interface{}, error) {
+func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareService string) ([]interface{}, error) {
 	var entities []interface{}
 	typ := typs[0]
 	if link != "" {
@@ -3322,9 +3324,11 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]interface
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
-		if entityMap["type"] == typ {
-			compactEntity := tb.createOriginalPayload(entity)
-			entities = append(entities, compactEntity)
+		if strings.HasSuffix(entityMap["id"].(string),fiwareService) == true {
+			if entityMap["type"] == typ {
+				compactEntity := tb.createOriginalPayload(entity)
+				entities = append(entities, compactEntity)
+			}
 		}
 	}
 	tb.ldEntities_lock.Unlock()

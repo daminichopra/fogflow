@@ -367,7 +367,19 @@ func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 // To get query parameters from NGSI-LD Entity Query Requests
 func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.Request) {
 	queryValues := r.URL.Query()
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" {
+	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" { 
+		var fiwareService string
+		if r.Header.Get("fiware-service") != "" {
+			fiwareService  = r.Header.Get("fiware-service")
+			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+		} else {
+			fiwareService = "default"
+		}
+
+		if r.Header.Get("fiware-servicepath") != "" {
+			w.Header().Set("fiware-servicepath", r.Header.Get("fiware-servicepath"))
+		}
+
 		if attrs, ok := queryValues["attrs"]; ok == true {
 			if len(queryValues) > 1 {
 				rest.Error(w, "Query parameters other than attrs are not supported in this request!", 400)
@@ -377,7 +389,8 @@ func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.
 				rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
 				return
 			}
-			entities := apisrv.broker.ldEntityGetByAttribute(attrs)
+
+			entities := apisrv.broker.ldEntityGetByAttribute(attrs,fiwareService)
 			if len(entities) > 0 {
 				w.WriteHeader(200)
 				w.WriteJson(entities)
@@ -432,7 +445,7 @@ func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.
 				return
 			}
 			link := r.Header.Get("Link")
-			entities, err := apisrv.broker.ldEntityGetByType(typ, link)
+			entities, err := apisrv.broker.ldEntityGetByType(typ, link, fiwareService)
 			if err != nil {
 				w.WriteHeader(500)
 			} else {

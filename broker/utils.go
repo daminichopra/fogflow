@@ -595,3 +595,10 @@ func FiwareHeaderCheck(fiwareService string, fiwareServicePath string) bool {
 	}
 	return false
 }
+
+func getActualEntity(resultEntity map[string]interface{}) string {
+	id := resultEntity["id"].(string)
+	idSplit := strings.Split(id, ".")
+	actualId := idSplit[0]
+	return actualId
+}
