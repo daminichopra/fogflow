@@ -589,16 +589,14 @@ func contentTypeValidator(cType string) error {
 	return nil
 }
 
-func FiwareHeaderCheck(fiwareService string, fiwareServicePath string) bool {
-	if fiwareService != "" {
-		return true
-	}
-	return false
-}
-
 func getActualEntity(resultEntity map[string]interface{}) string {
 	id := resultEntity["id"].(string)
-	idSplit := strings.Split(id, ".")
+	idSplit := strings.Split(id, "@")
 	actualId := idSplit[0]
 	return actualId
+}
+
+func getIoTID(id string, fiwareService string) string {
+	Id := id + "@" + fiwareService 
+	return Id
 }
