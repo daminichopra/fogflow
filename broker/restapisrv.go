@@ -336,10 +336,10 @@ func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 	var newEid string
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json" || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*" {
 		if r.Header.Get("fiware-service") != "" {
-			newEid =  eid + "." + r.Header.Get("fiware-service")
+			newEid =  eid + "@" + r.Header.Get("fiware-service")
 			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
 		} else {
-			newEid =  eid + "." + "default"
+			newEid =  eid + "@" + "default"
 		}
 
 		if r.Header.Get("fiware-servicepath") != "" {

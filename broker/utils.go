@@ -446,9 +446,11 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
 	}
 	LdElementList := make([]interface{}, 0)
+	subscriptionId, fiwareService := fiwareId(subscriptionId)
 	for _, ldEle := range ldCompactedElems {
 		element := make(map[string]interface{})
-		element["id"] = ldEle["id"]
+		id, _ := fiwareId(ldEle["id"].(string))
+		element["id"] = id
 		element["type"] = ldEle["type"]
 		for k, _ := range ldEle {
 			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
@@ -479,6 +481,9 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	}
 
 	req, err := http.NewRequest("POST", notifyURL, bytes.NewBuffer(body))
+	if fiwareService != "default" {
+		req.Header.Add("fiware-service", fiwareService)
+	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
@@ -596,6 +601,10 @@ func getActualEntity(resultEntity map[string]interface{}) string {
 	return actualId
 }
 
+func fiwareId(id string) (string, string) {
+	idSplit := strings.Split(id, "@")
+	return idSplit[0],idSplit[1]
+}
 func getIoTID(id string, fiwareService string) string {
 	Id := id + "@" + fiwareService 
 	return Id

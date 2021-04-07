@@ -2783,6 +2783,7 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string]interface{}, sid string) {
 	tb.ldSubscriptions_lock.Lock()
 	ldSubscription, ok := tb.ldSubscriptions[sid]
+	fmt.Println("ldSubscription",ldSubscription)
 	if ok == false {
 		tb.ldSubscriptions_lock.Unlock()
 	}
