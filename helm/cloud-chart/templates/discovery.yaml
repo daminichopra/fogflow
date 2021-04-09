@@ -1,97 +1,94 @@
-#Master deployment and service configuration
+#Discovery deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   #FogFlow cloud components will be deployed inside fogflow namespace
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
+    "helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
-    io.kompose.service: master
-  name: master
+    io.kompose.service: discovery
+  name: discovery
 spec:
-  #replicas will make sure that 2 pods running all the time for the deployment
-  replicas: 2 
+  #replicas will make sure that no. of replicaCount mention in values.yaml
+  # are running all the time for the deployment
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: master
+      io.kompose.service: discovery  
   minReadySeconds: 10
   #strategy tells about How do want to update the pods?
   strategy:
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 25% 
+      maxUnavailable: 25% 
     type: RollingUpdate
-  # This template field is a regular pod configuration
+   # This template field is a regular pod configuration
   # nested inside the deployment spec
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: master
+        io.kompose.service: discovery
     spec:
       containers:
-      - image: fogflow/master:3.2
-        imagePullPolicy: ""
-        name: master
+      - image: fogflow/discovery:latest
+        imagePullPolicy: Always 
+        name: discovery
         ports:
-        - containerPort: 1060
+        - containerPort: 8090
         #readiness and liveness to check pod's Health
         readinessProbe:
           tcpSocket:
-            port: 1060
+            port: 8090
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 1060
+            port: 8090
           initialDelaySeconds: 15
           periodSeconds: 20
         resources:
-         #CPU and memory limits for FogFlow master deployment 
+         #CPU and memory limits for discovery deployment 
           limits:
             memory: 2Gi
-            cpu: 1 
+            cpu: 1
           requests:
-            memory: 2Gi
-            cpu: 1 
+            memory: 1Gi
+            cpu: 1
         volumeMounts:
-        - name: config-json
+        - name: config-json       
           mountPath: /config.json
           readOnly: true
       restartPolicy: Always
-      serviceAccountName: fogflow-dns 
+      serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json
         hostPath:
-          path: /home/necuser/fogflow/fogflow/yaml/config.json 
+          path: {{ .Values.configJson.hostPath.path }}
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: master
-  name: master
+    io.kompose.service: discovery
+  name: discovery
 spec:
   ports:
-  - name: "1060"
-    port: 1060
-    targetPort: 1060
+  - name: "8090"
+    port: 8090
+    targetPort: 8090
   selector:
-    io.kompose.service: master
-  externalIPs: [172.30.48.24] 
-status:
-  loadBalancer: {}
-
+    io.kompose.service: discovery
+  externalIPs: {{ .Values.Service.spec.externalIPs }}
+ 
