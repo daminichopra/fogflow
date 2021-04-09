@@ -22,6 +22,24 @@ import (
 type LdThinBroker struct {
 	SecurityCfg     *HTTPS
 	myProfile BrokerProfile
+
+        //NGSI-LD feature addition
+        ldEntities      map[string]interface{} // to map Entity Id with LDContextElement.
+        ldEntities_lock sync.RWMutex
+
+        ldContextRegistrations      map[string]CSourceRegistrationRequest // to map Registration Id with CSourceRegistrationRequest.
+        ldContextRegistrations_lock sync.RWMutex
+
+        ldEntityID2RegistrationID      map[string]string //to map the Entity IDs with their registration id.
+        ldEntityID2RegistrationID_lock sync.RWMutex
+
+        ldSubscriptions      map[string]*LDSubscriptionRequest // to map Subscription Id with LDSubscriptionRequest.
+        ldSubscriptions_lock sync.RWMutex
+
+        tmpNGSIldNotifyCache    []string
+        tmpNGSILDNotifyCache    map[string]*NotifyContextAvailabilityRequest
+        entityId2LDSubcriptions map[string][]string
+
 }
 
 //NGSILD upsert API
