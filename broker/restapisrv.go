@@ -17,11 +17,11 @@ import (
 
 type RestApiSrv struct {
 	broker *ThinBroker
+	ldBroker *LdThinBroker
 }
 
 func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 	apisrv.broker = broker
-
 	// start REST API server
 	router, err := rest.MakeRouter(
 		// standard ngsi10 API
@@ -64,7 +64,8 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		//NGSI-LD APIs
 
 		// Add upsert Api
-		rest.Post("/ngsi-ld/v1/entityOperations/upsert", broker.LDUpdateContext),
+		rest.Post("/ngsi-ld/v1/entityOperations/upsert", apisrv.ldBroker.LDUpdateContext),
+		rest.Post("/ngsi-ld/v1/entityOperations/upsert/", apisrv.ldBroker.LDUpdateContext),
 		//create and update
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
 

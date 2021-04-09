@@ -1869,7 +1869,7 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 
 // NGSI-LD starts from here.
 
-func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
+/*func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
 	if err != nil {
 		w.WriteHeader(500)
@@ -1971,7 +1971,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 	}
 }
-
+*/
 // Create an NGSI-LD Entity
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	//Also allow the header to json+ld for specific cases
