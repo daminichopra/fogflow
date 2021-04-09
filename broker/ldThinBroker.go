@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	//"sync"
+	"sync"
 	//"time"
 
 	"github.com/ant0ine/go-json-rest/rest"
