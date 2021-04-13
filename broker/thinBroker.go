@@ -1329,6 +1329,7 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 func (tb *ThinBroker) NotifyLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
 	notifyLDContextAvailabilityReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyLDContextAvailabilityReq)
+	fmt.Println("notifyLDContextAvailabilityReq:",&notifyLDContextAvailabilityReq)
 	if err != nil {
 		ERROR.Println(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1676,6 +1677,7 @@ func (tb *ThinBroker) registerContextElement(element *ContextElement) {
 	registration.ContextRegistrationAttributes = attributes
 	registration.Metadata = element.Metadata
 	registration.ProvidingApplication = tb.MyURL
+	registration.MsgFormat = "NGSIV1"
 
 	// create or update registered context
 	registerCtxReq := RegisterContextRequest{}
@@ -1872,18 +1874,12 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
 	var fiwareService string
-	var fiwareServicePath string		
+	//var fiwareServicePath string		
 	if r.Header.Get("fiware-service") != ""{
 		fiwareService = r.Header.Get("fiware-service")	
 	} else {
 		fiwareService = "default"
 	}
-	if r.Header.Get("fiware-servicePath") != ""{
-		fiwareServicePath = r.Header.Get("fiware-servicePath")	
-	} else {
-		fiwareServicePath = "default"
-	}
-	fmt.Println(fiwareServicePath)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -1977,6 +1973,12 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					//deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
+					fmt.Println(r.Header.Get("fiware-servicePath"))
+					if r.Header.Get("fiware-servicePath") != "" {
+						deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
+					} else {
+						deSerializedEntity["fiwareServicePath"] = "default"
+					}
 					fmt.Println(deSerializedEntity)
 					res.Success = append(res.Success, deSerializedEntity["id"].(string))
 					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
@@ -2079,8 +2081,9 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
 	for k, v := range elem {
-		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "mgsFormat" && k != "fiwareServicePath" {
 			if _, ok := entityMap[k]; ok == true {
+				fmt.Println("k",k)
 				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
 				attrMap := elem[k].(map[string]interface{})            // to be updated as
 				if strings.Contains(attrMap["type"].(string), "Property") {
@@ -2116,7 +2119,7 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 				entityAttrMap["modifiedAt"] = time.Now().String()
 				entityMap[k] = entityAttrMap
 			} else {
-				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" &&  k != "mgsFormat" && k != "fiwareServicePath"{
 
 					entityMap[k] = v
 				}
@@ -2226,6 +2229,10 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
 	for k, attr := range elem { // considering properties and relationships as attributes
 		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+			if k == "fiwareServicePath" {
+				ctxReg.FiwareServicePath = attr.(string)
+				continue
+			}
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
 			typ := attrValue["type"].(string)
@@ -2239,7 +2246,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	}
 	ctxReg.ContextRegistrationAttributes = ctxRegAttrs
 	ctxReg.ProvidingApplication = tb.MyURL
-
+	ctxReg.MsgFormat = "NGSILD"
 	ctxRegistrations = append(ctxRegistrations, ctxReg)
 
 	registerCtxReq.ContextRegistrations = ctxRegistrations
@@ -2405,9 +2412,21 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				//tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
 
 				// For integration with NGSILD broker
-				if r.Header.Get("Integration") == "true" {
-					deSerializedSubscription.Subscriber.Integration = true
-				}
+				if r.Header.Get("Integration") != "" {
+                                        deSerializedSubscription.Subscriber.Integration = r.Header.Get("Integration")
+                                }
+				// for integration With IoT Agent
+                                if r.Header.Get("fiware-service") != "" {
+                                        deSerializedSubscription.Subscriber.FiwareService = r.Header.Get("fiware-service")
+                                } else {
+                                        deSerializedSubscription.Subscriber.FiwareService = ""
+                                }
+                                if r.Header.Get("fiware-servicepath") != "" {
+                                        deSerializedSubscription.Subscriber.FiwareServicePath = r.Header.Get("fiware-servicepath")
+                                } else {
+                                        deSerializedSubscription.Subscriber.FiwareServicePath = ""
+                                }
+
 				if r.Header.Get("Require-Reliability") == "true" {
 					deSerializedSubscription.Subscriber.RequireReliability = true
 					deSerializedSubscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
@@ -2425,7 +2444,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					}
 					tb.notifyOneLDSubscriberWithCurrentStatus(deSerializedSubscription.Entities, deSerializedSubscription.Id)
 				} else {
-					tb.SubscribeLDContextAvailability(&deSerializedSubscription,fiwareService)
+					tb.SubscribeLDContextAvailability(&deSerializedSubscription,fiwareService,fiwareServicePath)
 				}
 			}
 		}
@@ -2436,7 +2455,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 }
 
 // Subscribe to Discovery for context availabiltiy
-func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest, fiwareService string) error {
+func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest, fiwareService string, fiwareServicePath string) error {
 	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
 	for key, entity := range subReq.Entities {
 		if entity.IdPattern != "" {
@@ -2444,6 +2463,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 		}
 		subReq.Entities[key] = entity
 	}
+
 	for key, entity := range subReq.Entities {
 		if entity.ID != "" {
 			entity.ID = getIoTID(entity.ID,fiwareService) 
@@ -2795,7 +2815,9 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 	}
 	tb.ldSubscriptions_lock.Unlock()
 	fmt.Println(ldSubscription.Subscriber.Integration)
-	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, tb.SecurityCfg)
+	FiwareService := ldSubscription.Subscriber.FiwareService
+	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
+	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration,FiwareService,FiwareServicePath, tb.SecurityCfg)
 	notifyTime := time.Now().String()
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)

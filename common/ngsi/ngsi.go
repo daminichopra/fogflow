@@ -291,6 +291,8 @@ type EntityId struct {
 	IsPattern bool   `json:"isPattern,omitempty"`
 	ID        string `json:"id"`
 	IdPattern string `json:"idPattern,omitempty"`
+	FiwareServicePath  string  `json:"fiwareServicePath,omitempty"`
+	MsgFormat  string  `json:"magFormat,omitempty"`
 }
 
 type Conditions struct {
@@ -663,6 +665,8 @@ type EntityRegistration struct {
 	AttributesList       map[string]ContextRegistrationAttribute
 	MetadataList         map[string]ContextMetadata
 	ProvidingApplication string
+	FiwareServicePath    string
+        MsgFormat            string
 }
 
 func (registredEntity *EntityRegistration) GetLocation() Point {
@@ -732,6 +736,9 @@ type ContextRegistration struct {
 	ContextRegistrationAttributes []ContextRegistrationAttribute `json:"attributes,omitempty"`
 	Metadata                      []ContextMetadata              `json:"contextMetadata,omitempty"`
 	ProvidingApplication          string                         `json:"providingApplication"`
+	FiwareServicePath             string
+        MsgFormat                     string
+
 }
 
 type ContextRegistrationResponse struct {
@@ -764,6 +771,9 @@ type Subscriber struct {
 	Integration        bool
 	NotifyCache        []*ContextElement
 	LDNotifyCache      []map[string]interface{}
+	Integration        string
+        FiwareService      string
+
 }
 
 type SubscribeContextRequest struct {

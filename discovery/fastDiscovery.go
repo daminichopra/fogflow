@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-
+	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -74,7 +74,7 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 		registrationID := u1.String()
 		registerCtxReq.RegistrationId = registrationID
 	}
-
+	fmt.Println("registerCtxReq",registerCtxReq)
 	// update context registration
 	go fd.updateRegistration(&registerCtxReq)
 
@@ -99,7 +99,7 @@ func (fd *FastDiscovery) forwardRegistrationCtxAvailability(discoveryURL string,
 func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, updateAction string) {
 	fd.subscriptions_lock.RLock()
 	defer fd.subscriptions_lock.RUnlock()
-
+	fmt.Println("registration:",registration)
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
@@ -112,7 +112,8 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 			entity.ID = registration.ID
 			entity.Type = registration.Type
 			entity.IsPattern = false
-
+			entity.FiwareServicePath = registration.FiwareServicePath
+		        entity.MsgFormat = registration.MsgFormat
 			entities = append(entities, entity)
 
 			entityMap := make(map[string][]EntityId)
@@ -303,6 +304,7 @@ func (fd *FastDiscovery) sendNotify(subID string, subscriberURL string, entityMa
 	}
 
 	notifyReq.ContextRegistrationResponseList = registrationList
+	fmt.Println("+++notifyReq.ContextRegistrationResponseList+++",notifyReq)
 
 	// if there are some notificaitons already in the tmpCache, send those in the cache first
 	fd.cache_lock.RLock()
@@ -355,12 +357,13 @@ func (fd *FastDiscovery) OnTimer() {
 }
 
 func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyContextAvailabilityRequest) bool {
+	fmt.Println("+++++++++++notifyReq++++++++++",notifyReq)
 	body, err := json.Marshal(notifyReq)
 	if err != nil {
 		ERROR.Println(err)
 		return false
 	}
-
+	fmt.Println("notifyReq:",notifyReq)
 	req, err := http.NewRequest("POST", subscriberURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")

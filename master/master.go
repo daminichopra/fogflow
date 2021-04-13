@@ -228,7 +228,7 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 	}
 
 	contextObj := CtxElement2Object(&(notifyCtxReq.ContextResponses[0].ContextElement))
-
+	fmt.Println(" contextObj :",contextObj )
 	switch stype {
 	// registry of an operator
 	case "Operator":
@@ -480,7 +480,7 @@ func (master *Master) queryWorkers() []*ContextObject {
 func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyContextAvailabilityRequest) {
 	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY=========")
 	DEBUG.Println(notifyCtxAvailReq)
-
+	fmt.Println("@@@@@@@@@@@@@@notifyCtxAvailReq@@@@@@@@@@@@@@@@",notifyCtxAvailReq)
 	subID := notifyCtxAvailReq.SubscriptionId
 
 	var action string
@@ -498,6 +498,7 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 		for _, entity := range registration.EntityIdList {
 			// convert context registration to entity registration
 			entityRegistration := master.contextRegistration2EntityRegistration(&entity, &registration)
+			fmt.Println("@@@@@@@@@@@entityRegistration@@@@@@@@",entityRegistration)
 			go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
 		}
 	}
@@ -507,14 +508,16 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 	entityRegistration := EntityRegistration{}
 
 	ctxObj := master.RetrieveContextEntity(entityId.ID)
-
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
 		entityRegistration.Type = entityId.Type
+		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+		entityRegistration.MsgFormat = entityId.MsgFormat
 	} else {
 		entityRegistration.ID = ctxObj.Entity.ID
 		entityRegistration.Type = ctxObj.Entity.Type
-
+		entityRegistration.FiwareServicePath = ctxObj.Entity.FiwareServicePath
+		entityRegistration.MsgFormat = ctxObj.Entity.MsgFormat
 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
 		for attrName, attrValue := range ctxObj.Attributes {
 			attributeRegistration := ContextRegistrationAttribute{}

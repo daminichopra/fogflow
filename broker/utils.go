@@ -438,73 +438,112 @@ func removeSystemAppendedTime(element map[string]interface{}) map[string]interfa
 	}
 	return elements
 }
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration bool, httpsCfg *HTTPS) error {
-	INFO.Println("NOTIFY: ", URL)
-	ldCompactedElems := make([]map[string]interface{}, 0)
-	for k, _ := range ldCtxElems {
-		resolved, _ := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
-	}
-	LdElementList := make([]interface{}, 0)
-	subscriptionId, fiwareService := fiwareId(subscriptionId)
-	for _, ldEle := range ldCompactedElems {
-		element := make(map[string]interface{})
-		id, _ := fiwareId(ldEle["id"].(string))
-		element["id"] = id
-		element["type"] = ldEle["type"]
-		for k, _ := range ldEle {
-			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-				attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
-				element[k] = attr
-			}
-		}
-		LdElementList = append(LdElementList, element)
-	}
-	var notifyCtxReq interface{}
-	var notifyURL string
-	if integration == true {
-		notifyCtxReq = LdElementList
-		notifyURL = URL + "/ngsi-ld/v1/entityOperations/upsert"
-	} else {
-		notifyCtxReq = &LDNotifyContextRequest{
-			SubscriptionId: subscriptionId,
-			Data:           LdElementList,
-			Type:           "Notification",
-			Id:             "fogflow:notification",
-			NotifyAt:       time.Now().String(),
-		}
-		notifyURL = URL
-	}
-	body, err := json.Marshal(notifyCtxReq)
-	if err != nil {
-		return err
-	}
 
-	req, err := http.NewRequest("POST", notifyURL, bytes.NewBuffer(body))
-	if fiwareService != "default" {
-		req.Header.Add("fiware-service", fiwareService)
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
-	client := &http.Client{}
-	if strings.HasPrefix(URL, "https") == true {
-		client = httpsCfg.GetHTTPClient()
-	}
-	resp, err := client.Do(req)
-	fmt.Println(resp)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return err
-	}
-
-	ioutil.ReadAll(resp.Body)
-
-	return nil
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration string, fiwareService string, fiwareServicePath string, httpsCfg *HTTPS) error {
+        INFO.Println("NOTIFY: ", URL)
+        ldCompactedElems := make([]map[string]interface{}, 0)
+        for k, _ := range ldCtxElems {
+                resolved, _ := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+                ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
+        }
+        fmt.Println("Expanded data", ldCompactedElems)
+        var notifyCtxReq interface{}
+        var notifyURL string
+        var newBody []byte
+        if integration != "IoTI" {
+                LdElementList := make([]interface{}, 0)
+                for _, ldEle := range ldCompactedElems {
+                        element := make(map[string]interface{})
+                        element["id"] = ldEle["id"]
+                        element["type"] = ldEle["type"]
+                        for k, _ := range ldEle {
+                                if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
+                                        attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
+                                        fmt.Println("attr:",attr)
+                                        element[k] = attr
+                                }
+                        }
+                        LdElementList = append(LdElementList, element)
+                }
+                if integration == "NGSILDBroker" {
+                        notifyCtxReq = LdElementList
+                        notifyURL = URL + "/ngsi-ld/v1/entityOperations/upsert"
+                } else {
+                        notifyCtxReq = &LDNotifyContextRequest{
+                                SubscriptionId: subscriptionId,
+                                Data:           LdElementList,
+                                Type:           "Notification",
+                                Id:             "fogflow:notification",
+                                NotifyAt:       time.Now().String(),
+                        }
+                        notifyURL = URL
+                }
+                body, err := json.Marshal(notifyCtxReq)
+                if err != nil {
+                        return err
+                }
+                newBody = body
+                err = upsertRequest(newBody, notifyURL, fiwareService,fiwareServicePath,httpsCfg)
+                return err
+        } else {
+                var id string
+                var updatedAttr string
+                fmt.Println("This is else")
+                for _, ldEle := range ldCompactedElems {
+                        id = ldEle["id"].(string)
+                        fmt.Println(id)
+                        fmt.Println("ldEle",ldEle)
+                        for k, _ := range ldEle {
+                                 if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
+                                        updatedAttr = k
+                                        fmt.Println(updatedAttr)
+                                        attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
+                                        fmt.Println("attr",attr)
+                                        notifyURL = URL + "/ngsi-ld/v1/entities/"+id+"attrs"+updatedAttr
+                                        body, err := json.Marshal(attr )
+                                        if err != nil {
+                                        return err
+                                        }
+                                        err = upsertRequest(body,notifyURL,fiwareService,fiwareServicePath,httpsCfg)
+                                        return err
+                                }
+                        }
+                }
+        }
+        return nil
 }
+
+func upsertRequest(body []byte, URL string , fiwreService string, FiwareServicePath string, httpsCfg *HTTPS) error {
+        req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+        if fiwreService != "default" {
+                req.Header.Add("fiware-service", fiwreService)
+        }
+        if fiwreService != "default" {
+                req.Header.Add("fiware-service", FiwareServicePath)
+        }
+        req.Header.Add("Content-Type", "application/json")
+        req.Header.Add("Accept", "application/json")
+        req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+
+        client := &http.Client{}
+        if strings.HasPrefix(URL, "https") == true {
+                client = httpsCfg.GetHTTPClient()
+        }
+        resp, err := client.Do(req)
+        fmt.Println(resp)
+        if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                return err
+        }
+
+        ioutil.ReadAll(resp.Body)
+
+        return nil
+}
+
 
 func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttributes []string) map[string]interface{} {
 	if len(selectedAttributes) == 0 {
@@ -568,7 +607,7 @@ func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
 	recCtxEleMap := recCtxEle.(map[string]interface{})
 	currCtxEleMap := currCtxEle.(map[string]interface{})
 	for attr, _ := range recCtxEleMap {
-		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" {
+		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" && attr != "fiwareServicePath" && attr != "msgFormat" {
 			if isNewLdAttribute(attr, currCtxEleMap) == true {
 				return true
 			}
@@ -601,10 +640,11 @@ func getActualEntity(resultEntity map[string]interface{}) string {
 	return actualId
 }
 
-func fiwareId(id string) (string, string) {
+/*func fiwareId(id string) (string, string) {
 	idSplit := strings.Split(id, "@")
 	return idSplit[0],idSplit[1]
-}
+	//return id , "default"
+}*/
 func getIoTID(id string, fiwareService string) string {
 	Id := id + "@" + fiwareService 
 	return Id
