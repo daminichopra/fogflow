@@ -125,7 +125,7 @@ jobs:
         echo "NGSI-LD Testing !!!"
         cd ../NGSI-LD/
         pytest -s -v test_casesNGSI-LD.py --cov > result.txt
-        sed -e '202,348d' result.txt
+        echo result.txt | sed -e '202,348d' result.txt
 
         cd ../persistance/
         pytest -s -v 
