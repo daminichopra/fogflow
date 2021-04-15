@@ -113,15 +113,15 @@ jobs:
 
         cd ../test/UnitTest/
         screen -d -m python accumulator.py
-         
-        echo "NGSI-v2 Testing !!!"
+        
+        echo "\nNGSI-v2 Testing !!!"
         cd ../UnitTest/v2/
         pytest -s -v test_casesNGSIv2.py --cov > result.txt
         sed -i -e '33,146d' result.txt
         sed -i -e '36,37d' result.txt
         cat result.txt
  
-        echo "NGSI-v1 Testing !!!" 
+        echo "\nNGSI-v1 Testing !!!" 
         cd ../v1/
         pytest -s -v test_casesNGSIv1.py --cov > result.txt
         sed -i -e '79,192d' result.txt
@@ -129,7 +129,7 @@ jobs:
         cat result.txt
 
 
-        echo "NGSI-LD Testing !!!"
+        echo "\nNGSI-LD Testing !!!"
         cd ../NGSI-LD/
         pytest -s -v test_casesNGSI-LD.py --cov > result.txt
         sed -i -e '202,315d' result.txt 
