@@ -54,6 +54,7 @@ jobs:
         pip install Flask
         pip install requests
         pip install -U pytest
+        pip install pytest-cov
         sudo apt-get install curl
         
     - name: Running GoLint - a linter for golang
@@ -120,7 +121,9 @@ jobs:
         pytest -s -v
 
         cd ../NGSI-LD/
-        pytest -s -v 
+        pytest -s -v > result.txt
+        sed -n '1,203p' result.txt
+        rm -rf result.txt
 
         cd ../persistance/
         pytest -s -v 
