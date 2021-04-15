@@ -118,10 +118,12 @@ jobs:
         pytest -s -v
  
         cd ../v1/
-        pytest -s -v
+        pytest -s -v test_casesNGSIv1.py --cov > result.txt
+        sed -n '1,76p' result.txt
+        rm -rf result.txt
 
         cd ../NGSI-LD/
-        pytest -s -v --cov > result.txt
+        pytest -s -v test_casesNGSI-LD.py --cov > result.txt
         sed -n '1,203p' result.txt
         rm -rf result.txt
 
