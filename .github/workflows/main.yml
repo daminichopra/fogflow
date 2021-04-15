@@ -121,7 +121,7 @@ jobs:
         pytest -s -v
 
         cd ../NGSI-LD/
-        pytest -s -v > result.txt
+        pytest -s -v --cov > result.txt
         sed -n '1,203p' result.txt
         rm -rf result.txt
 
