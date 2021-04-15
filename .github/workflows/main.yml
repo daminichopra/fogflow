@@ -123,8 +123,8 @@ jobs:
 
         cd ../NGSI-LD/
         pytest -s -v test_casesNGSI-LD.py --cov > result.txt
-        cat result.txt
-        sed -e '202,350d' result.txt
+        #cat result.txt
+        sed -e '202,348d' result.txt
 
         cd ../persistance/
         pytest -s -v 
