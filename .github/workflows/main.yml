@@ -117,13 +117,14 @@ jobs:
         cd ../UnitTest/v2/
         pytest -s -v
  
+         echo "NGSI-v1 Testing !!!" 
         cd ../v1/
         pytest -s -v test_casesNGSIv1.py --cov > result.txt
         cat result.txt
 
+        echo "NGSI-LD Testing !!!"
         cd ../NGSI-LD/
         pytest -s -v test_casesNGSI-LD.py --cov > result.txt
-        #cat result.txt
         sed -e '202,348d' result.txt
 
         cd ../persistance/
