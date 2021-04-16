@@ -317,8 +317,15 @@ func (apisrv *RestApiSrv) deleteRegistration(w rest.ResponseWriter, r *rest.Requ
 
 func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
+	var newEid string
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
-		err := apisrv.broker.ldDeleteEntity(eid)
+		if r.Header.Get("fiware-service") != "" {
+                       	newEid =  eid + "@" + r.Header.Get("fiware-service")
+                        w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+                } else {
+                        newEid =  eid + "@" + "default"
+                }
+		err := apisrv.broker.ldDeleteEntity(newEid)
 		if err == nil {
 			w.WriteHeader(204)
 		} else {

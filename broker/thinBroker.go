@@ -1873,6 +1873,7 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 
 func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
+	fmt.Println(err)
 	var fiwareService string
 	//var fiwareServicePath string		
 	if r.Header.Get("fiware-service") != ""{
@@ -2003,18 +2004,38 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	//Also allow the header to json+ld for specific cases
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
+		var fiwareService string
+        //var fiwareServicePath string
+	        if r.Header.Get("fiware-service") != ""{
+		        fiwareService = r.Header.Get("fiware-service")
+		} else {
+			fiwareService = "default"
+		 }
+
 		var context []interface{}
-		contextInPayload := true
+		//contextInPayload := true
 		//Get Link header if present
+		//Link := r.Header.Get("Link")
+		//if link := r.Header.Get("Link"); link != "" {
+		//	contextInPayload = false                    // Context in Link header
+		//	linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+		//	if linkMap["rel"] != DEFAULT_CONTEXT {
+		//		context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
+		//	}
+		//}
+
+		contextInPayload := false
+		cType := r.Header.Get("Content-Type")
+		cTypeInLower := strings.ToLower(cType)
 		Link := r.Header.Get("Link")
-		if link := r.Header.Get("Link"); link != "" {
-			contextInPayload = false                    // Context in Link header
-			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-			if linkMap["rel"] != DEFAULT_CONTEXT {
-				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
-			}
+		if cTypeInLower == "application/ld+json" {
+			contextInPayload = true
+		} else {
+			fmt.Println("Adding default header")
+			context = append(context, DEFAULT_CONTEXT)
 		}
-		context = append(context, DEFAULT_CONTEXT)
+
+		//context = append(context, DEFAULT_CONTEXT)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
 		var LDupdateCtxReq interface{}
 
@@ -2026,6 +2047,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		//Get a resolved object ([]interface object)
+		fmt.Println("Context",context)
 		resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
 		if err != nil {
 
@@ -2065,9 +2087,15 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 					rest.Error(w, "Entity id must contain uri!", 400)
 					return
 				}
+				deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string),fiwareService)
+				deSerializedEntity["@context"] = context
 				w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
-
+				if r.Header.Get("fiware-servicePath") != "" {
+                                                deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
+                                        } else {
+                                                deSerializedEntity["fiwareServicePath"] = "default"
+                                        }
 				tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 			}
 		}
@@ -2217,7 +2245,14 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}
-	entityId.ID = elem["id"].(string)
+	//entityId.ID = elem["id"].(string)
+	Eid ,Fs := FiwareId(elem["id"].(string))
+	if Fs == "default" {
+		entityId.ID = Eid
+	} else {
+		entityId.ID = elem["id"].(string)
+	}
+	fmt.Println("Fs",Fs)
 	entityId.Type = elem["type"].(string)
 	entities = append(entities, entityId)
 
@@ -2400,7 +2435,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				subResp.SubscribeResponse.SubscriptionId = deSerializedSubscription.Id
 				subResp.SubscribeError.SubscriptionId = deSerializedSubscription.Id
 				w.WriteJson(&subResp)
-				deSerializedSubscription.Id = getIoTID(deSerializedSubscription.Id,fiwareService)
+				//deSerializedSubscription.Id = getIoTID(deSerializedSubscription.Id,fiwareService)
 				if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 					deSerializedSubscription.Subscriber.IsInternal = true
 				} else {
@@ -3212,9 +3247,15 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	var req interface{}
 	var eid = r.PathParam("eid")
 	var attr = r.PathParam("attr")
-
+	var newEid string
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		reqBytes, err := ioutil.ReadAll(r.Body)
+		if r.Header.Get("fiware-service") != "" {
+                        newEid =  eid + "@" + r.Header.Get("fiware-service")
+                        w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+                } else {
+                        newEid =  eid + "@" + "default"
+                }
 		if err != nil {
 			rest.Error(w, err.Error(), 400)
 		}
@@ -3225,7 +3266,7 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 		}
 	}
 
-	err := tb.ldDeleteEntityAttribute(eid, attr, req)
+	err := tb.ldDeleteEntityAttribute(newEid, attr, req)
 
 	if err == nil {
 		w.WriteHeader(204)

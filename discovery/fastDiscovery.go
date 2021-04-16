@@ -423,8 +423,14 @@ func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r
 
 func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
-
-	registration := fd.repository.retrieveRegistration(eid)
+	var newEid string
+	if r.Header.Get("fiware-service") != "" {
+                newEid =  eid + "@" + r.Header.Get("fiware-service")
+                w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+        } else {
+                newEid =  eid + "@" + "default"
+        }
+	registration := fd.repository.retrieveRegistration(newEid)
 	w.WriteJson(registration)
 }
 

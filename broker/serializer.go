@@ -36,7 +36,7 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 					mp := interfaceArray[0].(map[string]interface{})
 					_, oK := mp["@type"]
 					if oK == false {
-						err := errors.New("type can not be nil!")
+						err := errors.New("attribute type can not be nil!")
 						return nil, err
 					}
 					typ := mp["@type"].([]interface{})

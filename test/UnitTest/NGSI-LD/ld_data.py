@@ -1939,3 +1939,23 @@ subdata64=\
 }
 ]
 
+testData74=\
+ [{
+  	"id": "urn:ngsi-ld:Device:water001",
+  	"type": "Device",
+  	"on": {
+  		"type": "Property",
+  		"value": " "
+  	}
+  }]
+
+testData75=\
+ {
+        "id": "urn:ngsi-ld:Device:water001",
+        "type": "Device",
+        "on": {
+                "type": "Property",
+                "value": " "
+        }
+  }
+
