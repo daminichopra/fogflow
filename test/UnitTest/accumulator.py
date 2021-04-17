@@ -7,10 +7,28 @@ app = Flask(__name__)
 myStatus = 'off'
 
 subId = []
-
+entityIdDict = {}
 # Getting notification for Quantumleap and sending response 200 to the
 # test module
 
+@app.route('/ngsi-ld/v1/entityOperations/upsert', methods=['POST'])
+def upsertNotification():
+    global entityIdDict
+    print(dir(request))
+    entities = request.get_json()
+    entity = entities[0]
+    id = entity["id"]
+    entityIdDict[id] = 1
+    return "Done"
+
+@app.route('/validateupsert/<entityId>')
+def upsertNotificationvalidator(entityId):
+    global entityIdDict
+    if entityIdDict[entityId] == 1:
+         statusCode = "200"
+    else :	
+	 statusCode = "404"
+    return statusCode
 
 @app.route('/accumulate', methods=['POST'])
 def getUpdateNotification():
@@ -79,6 +97,7 @@ def getNotified_southbound():
     #print(pload)
     #print(subId)
     return "Notification of command recieved"
+
 
 
 # main file for starting application

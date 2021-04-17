@@ -11,6 +11,7 @@ import sys
 
 # change it by broker ip and port
 brokerIp="http://localhost:8070"
+accumulatorURl ="http://localhost:8888"
 discoveryIp="http://localhost:8090"
 
 # test if header content-Type application/json is allowed or not 
@@ -70,54 +71,14 @@ def test_case79():
         #print(r.status_code)
 	assert r.status_code == 500
 
-
-def test_case48():
-        #to create an entity
-        url=brokerIp+"/ngsi-ld/v1/entities/"
-        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
-        r=requests.post(url,data=json.dumps(ld_data.subdata38),headers=headers)
-        #print(r.content)
+def test_case80():
+        upsertURL=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        rUpsert=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand),headers=headers)
+	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
+	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         #print(r.status_code)
-
-        #to fetch the registration from discovery
-        url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A3000"
-        r=requests.get(url)
-        resp_content=r.content
-        resInJson= resp_content.decode('utf8').replace("'", '"')
-        resp=json.loads(resInJson)
-        #print(resp["AttributesList"]["https://uri.etsi.org/ngsi-ld/default-context/brandName"])
-        print("\nchecking if brandName attribute is present in discovery before deletion")
-        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
-                if resp["AttributesList"]["https://uri.etsi.org/ngsi-ld/default-context/brandName"]["type"] == "Property":
-                        print("\n-----> brandName is existing...!!")
-                else:
-                        print("\n-----> brandName does not exist..!")
-        else:
-                print("\nNot Validated")
-        #print(r.status_code)
-
-
-        #to delete brandName attribute
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A3000/attrs/brandName"
-        r=requests.delete(url)
-        #print(r.content)
-        #print(r.status_code)
-
-        #To fetch registration again from discovery
-        url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A3000"
-        r=requests.get(url)
-        resp_content=r.content
-        resInJson= resp_content.decode('utf8').replace("'", '"')
-        resp=json.loads(resInJson)
-        #print(resp["AttributesList"])
-        print("\nchecking if brandName attribute is present in discovery after deletion")
-        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
-                if "https://uri.etsi.org/ngsi-ld/default-context/brandName" in resp["AttributesList"]:
-                        print("\n-----> brandName is existing...!!")
-                else:
-                        print("\n-----> brandName does not exist because deleted...!")
-        else:
-                print("\nNot Validated")
-        assert r.status_code == 200
-
+	getURL=accumulatorURl+"/validateupsert/urn:ngsi-ld:Device:water001"
+	rget = requests.get(getURL)
+        assert rget.content == "200"
 

@@ -1959,3 +1959,28 @@ testData75=\
         }
   }
 
+subData80 = \
+{
+                "type": "Subscription",
+                "entities": [{
+			"id":"urn:ngsi-ld:Device:water001",
+                       "type": "Device"
+                }],
+              "notification": {
+                  "format": "normalized",
+                  "endpoint": {
+                           "uri": "http://180.179.214.202:8888",
+                           "accept": "application/ld+json"
+                   }
+               }
+ }
+
+upsertCommand = \
+[{
+  	"id": "urn:ngsi-ld:Device:water001",
+  	"type": "Device",
+  	"on": {
+  		"type": "Property",
+  		"value": " "
+  	}
+}]
