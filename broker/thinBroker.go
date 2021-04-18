@@ -1329,7 +1329,7 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 func (tb *ThinBroker) NotifyLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
 	notifyLDContextAvailabilityReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyLDContextAvailabilityReq)
-	fmt.Println("notifyLDContextAvailabilityReq:",&notifyLDContextAvailabilityReq)
+	fmt.Println("notifyLDContextAvailabilityReq:", &notifyLDContextAvailabilityReq)
 	if err != nil {
 		ERROR.Println(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1875,9 +1875,9 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
 	fmt.Println(err)
 	var fiwareService string
-	//var fiwareServicePath string		
-	if r.Header.Get("fiware-service") != ""{
-		fiwareService = r.Header.Get("fiware-service")	
+	//var fiwareServicePath string
+	if r.Header.Get("fiware-service") != "" {
+		fiwareService = r.Header.Get("fiware-service")
 	} else {
 		fiwareService = "default"
 	}
@@ -1970,11 +1970,11 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					}
-					deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string),fiwareService)
+					deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+					fmt.Println(deSerializedEntity["id"])
 					//deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
-					fmt.Println(r.Header.Get("fiware-servicePath"))
 					if r.Header.Get("fiware-servicePath") != "" {
 						deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
 					} else {
@@ -2000,17 +2000,18 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 	}
 }
+
 // Create an NGSI-LD Entity
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	//Also allow the header to json+ld for specific cases
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
 		var fiwareService string
-        //var fiwareServicePath string
-	        if r.Header.Get("fiware-service") != ""{
-		        fiwareService = r.Header.Get("fiware-service")
+		//var fiwareServicePath string
+		if r.Header.Get("fiware-service") != "" {
+			fiwareService = r.Header.Get("fiware-service")
 		} else {
 			fiwareService = "default"
-		 }
+		}
 
 		var context []interface{}
 		//contextInPayload := true
@@ -2047,7 +2048,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		//Get a resolved object ([]interface object)
-		fmt.Println("Context",context)
+		fmt.Println("Context", context)
 		resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
 		if err != nil {
 
@@ -2087,15 +2088,15 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 					rest.Error(w, "Entity id must contain uri!", 400)
 					return
 				}
-				deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string),fiwareService)
+				deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
 				deSerializedEntity["@context"] = context
 				w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
 				if r.Header.Get("fiware-servicePath") != "" {
-                                                deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
-                                        } else {
-                                                deSerializedEntity["fiwareServicePath"] = "default"
-                                        }
+					deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
+				} else {
+					deSerializedEntity["fiwareServicePath"] = "default"
+				}
 				tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 			}
 		}
@@ -2111,7 +2112,7 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 	for k, v := range elem {
 		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "mgsFormat" && k != "fiwareServicePath" {
 			if _, ok := entityMap[k]; ok == true {
-				fmt.Println("k",k)
+				fmt.Println("k", k)
 				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
 				attrMap := elem[k].(map[string]interface{})            // to be updated as
 				if strings.Contains(attrMap["type"].(string), "Property") {
@@ -2147,7 +2148,7 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 				entityAttrMap["modifiedAt"] = time.Now().String()
 				entityMap[k] = entityAttrMap
 			} else {
-				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" &&  k != "mgsFormat" && k != "fiwareServicePath"{
+				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "mgsFormat" && k != "fiwareServicePath" {
 
 					entityMap[k] = v
 				}
@@ -2163,6 +2164,7 @@ func (tb *ThinBroker) updateLdContextElement(ctxEle map[string]interface{}) {
 	tb.ldEntities_lock.Lock()
 	defer tb.ldEntities_lock.Unlock()
 	eid := getId(ctxEle)
+	fmt.Println("$$$$$ctxEle$$$", ctxEle)
 	if _, exist := tb.ldEntities[eid]; exist {
 		tb.updateCtxElemet(ctxEle, eid)
 	} else {
@@ -2246,13 +2248,13 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}
 	//entityId.ID = elem["id"].(string)
-	Eid ,Fs := FiwareId(elem["id"].(string))
+	Eid, Fs := FiwareId(elem["id"].(string))
 	if Fs == "default" {
 		entityId.ID = Eid
 	} else {
 		entityId.ID = elem["id"].(string)
 	}
-	fmt.Println("Fs",Fs)
+	fmt.Println("Fs", Fs)
 	entityId.Type = elem["type"].(string)
 	entities = append(entities, entityId)
 
@@ -2354,14 +2356,14 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 	//Also allow the header to json+ld for specific cases
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		var fiwareService string
-		var fiwareServicePath string		
-		if r.Header.Get("fiware-service") != ""{
-			fiwareService = r.Header.Get("fiware-service")	
+		var fiwareServicePath string
+		if r.Header.Get("fiware-service") != "" {
+			fiwareService = r.Header.Get("fiware-service")
 		} else {
 			fiwareService = "default"
 		}
-		if r.Header.Get("fiware-servicePath") != ""{
-			fiwareServicePath = r.Header.Get("fiware-servicePath")	
+		if r.Header.Get("fiware-servicePath") != "" {
+			fiwareServicePath = r.Header.Get("fiware-servicePath")
 		} else {
 			fiwareServicePath = "default"
 		}
@@ -2419,7 +2421,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 						return
 					}
 					sid := u1.String()
-					deSerializedSubscription.Id = sid 
+					deSerializedSubscription.Id = sid
 				}
 				if !strings.HasSuffix(deSerializedSubscription.Type, "Subscription") && !strings.HasSuffix(deSerializedSubscription.Type, "subscription") {
 					rest.Error(w, "Type not allowed!", http.StatusBadRequest)
@@ -2448,19 +2450,19 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 
 				// For integration with NGSILD broker
 				if r.Header.Get("Integration") != "" {
-                                        deSerializedSubscription.Subscriber.Integration = r.Header.Get("Integration")
-                                }
+					deSerializedSubscription.Subscriber.Integration = r.Header.Get("Integration")
+				}
 				// for integration With IoT Agent
-                                if r.Header.Get("fiware-service") != "" {
-                                        deSerializedSubscription.Subscriber.FiwareService = r.Header.Get("fiware-service")
-                                } else {
-                                        deSerializedSubscription.Subscriber.FiwareService = ""
-                                }
-                                if r.Header.Get("fiware-servicepath") != "" {
-                                        deSerializedSubscription.Subscriber.FiwareServicePath = r.Header.Get("fiware-servicepath")
-                                } else {
-                                        deSerializedSubscription.Subscriber.FiwareServicePath = ""
-                                }
+				if r.Header.Get("fiware-service") != "" {
+					deSerializedSubscription.Subscriber.FiwareService = r.Header.Get("fiware-service")
+				} else {
+					deSerializedSubscription.Subscriber.FiwareService = ""
+				}
+				if r.Header.Get("fiware-servicepath") != "" {
+					deSerializedSubscription.Subscriber.FiwareServicePath = r.Header.Get("fiware-servicepath")
+				} else {
+					deSerializedSubscription.Subscriber.FiwareServicePath = ""
+				}
 
 				if r.Header.Get("Require-Reliability") == "true" {
 					deSerializedSubscription.Subscriber.RequireReliability = true
@@ -2468,7 +2470,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				} else {
 					deSerializedSubscription.Subscriber.RequireReliability = false
 				}
-				// save subscription 
+				// save subscription
 				tb.createSubscription(&deSerializedSubscription)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")
@@ -2479,7 +2481,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					}
 					tb.notifyOneLDSubscriberWithCurrentStatus(deSerializedSubscription.Entities, deSerializedSubscription.Id)
 				} else {
-					tb.SubscribeLDContextAvailability(&deSerializedSubscription,fiwareService,fiwareServicePath)
+					tb.SubscribeLDContextAvailability(&deSerializedSubscription, fiwareService, fiwareServicePath)
 				}
 			}
 		}
@@ -2501,11 +2503,11 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 
 	for key, entity := range subReq.Entities {
 		if entity.ID != "" {
-			entity.ID = getIoTID(entity.ID,fiwareService) 
+			entity.ID = getIoTID(entity.ID, fiwareService)
 		}
 		subReq.Entities[key] = entity
 	}
-	fmt.Println("subReq",subReq)
+	fmt.Println("subReq", subReq)
 	ctxAvailabilityRequest.Entities = subReq.Entities
 	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
 	ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes...)
@@ -2838,7 +2840,7 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string]interface{}, sid string) {
 	tb.ldSubscriptions_lock.Lock()
 	ldSubscription, ok := tb.ldSubscriptions[sid]
-	fmt.Println("ldSubscription",ldSubscription)
+	fmt.Println("ldSubscription", ldSubscription)
 	if ok == false {
 		tb.ldSubscriptions_lock.Unlock()
 	}
@@ -2852,7 +2854,7 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 	fmt.Println(ldSubscription.Subscriber.Integration)
 	FiwareService := ldSubscription.Subscriber.FiwareService
 	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
-	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration,FiwareService,FiwareServicePath, tb.SecurityCfg)
+	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, FiwareService, FiwareServicePath, tb.SecurityCfg)
 	notifyTime := time.Now().String()
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
@@ -3251,11 +3253,11 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		reqBytes, err := ioutil.ReadAll(r.Body)
 		if r.Header.Get("fiware-service") != "" {
-                        newEid =  eid + "@" + r.Header.Get("fiware-service")
-                        w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-                } else {
-                        newEid =  eid + "@" + "default"
-                }
+			newEid = eid + "@" + r.Header.Get("fiware-service")
+			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+		} else {
+			newEid = eid + "@" + "default"
+		}
 		if err != nil {
 			rest.Error(w, err.Error(), 400)
 		}
@@ -3364,7 +3366,7 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
-		if strings.HasSuffix(entityMap["id"].(string),fiwareService) == true {
+		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
 			allExist := true
 			for _, attr := range attrs {
 				if _, ok := entityMap[attr]; ok != true {
@@ -3412,11 +3414,15 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	}
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
+		fmt.Println("Entity", entity)
 		entityMap := entity.(map[string]interface{})
-		if strings.HasSuffix(entityMap["id"].(string),fiwareService) == true {
+		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
 			if entityMap["type"] == typ {
-				compactEntity := tb.createOriginalPayload(entity)
-				entities = append(entities, compactEntity)
+				compactEntity := tb.createOriginalPayload(entityMap)
+				compactEntityMap := compactEntity.(map[string]interface{})
+				compactEntityMap["id"], _ = FiwareId(compactEntityMap["id"].(string))
+				delete(compactEntityMap, "fiwareServicePath")
+				entities = append(entities, compactEntityMap)
 			}
 		}
 	}

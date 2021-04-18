@@ -3,14 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
-	"net/http"
-	"strings"
-	"sync"
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"sync"
 
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
@@ -74,7 +74,7 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 		registrationID := u1.String()
 		registerCtxReq.RegistrationId = registrationID
 	}
-	fmt.Println("registerCtxReq",registerCtxReq)
+	fmt.Println("registerCtxReq", registerCtxReq)
 	// update context registration
 	go fd.updateRegistration(&registerCtxReq)
 
@@ -99,7 +99,7 @@ func (fd *FastDiscovery) forwardRegistrationCtxAvailability(discoveryURL string,
 func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, updateAction string) {
 	fd.subscriptions_lock.RLock()
 	defer fd.subscriptions_lock.RUnlock()
-	fmt.Println("registration:",registration)
+	fmt.Println("registration:", registration)
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
@@ -113,7 +113,7 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 			entity.Type = registration.Type
 			entity.IsPattern = false
 			entity.FiwareServicePath = registration.FiwareServicePath
-		        entity.MsgFormat = registration.MsgFormat
+			entity.MsgFormat = registration.MsgFormat
 			entities = append(entities, entity)
 
 			entityMap := make(map[string][]EntityId)
@@ -304,7 +304,7 @@ func (fd *FastDiscovery) sendNotify(subID string, subscriberURL string, entityMa
 	}
 
 	notifyReq.ContextRegistrationResponseList = registrationList
-	fmt.Println("+++notifyReq.ContextRegistrationResponseList+++",notifyReq)
+	fmt.Println("+++notifyReq.ContextRegistrationResponseList+++", notifyReq)
 
 	// if there are some notificaitons already in the tmpCache, send those in the cache first
 	fd.cache_lock.RLock()
@@ -357,13 +357,13 @@ func (fd *FastDiscovery) OnTimer() {
 }
 
 func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyContextAvailabilityRequest) bool {
-	fmt.Println("+++++++++++notifyReq++++++++++",notifyReq)
+	fmt.Println("+++++++++++notifyReq++++++++++", notifyReq)
 	body, err := json.Marshal(notifyReq)
 	if err != nil {
 		ERROR.Println(err)
 		return false
 	}
-	fmt.Println("notifyReq:",notifyReq)
+	fmt.Println("notifyReq:", notifyReq)
 	req, err := http.NewRequest("POST", subscriberURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -423,13 +423,15 @@ func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r
 
 func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
+	fmt.Println("eid", eid)
 	var newEid string
+	fmt.Println("r.Header.Get(fiware-service)", r.Header.Get("fiware-service"))
 	if r.Header.Get("fiware-service") != "" {
-                newEid =  eid + "@" + r.Header.Get("fiware-service")
-                w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-        } else {
-                newEid =  eid + "@" + "default"
-        }
+		newEid = eid + "@" + r.Header.Get("fiware-service")
+		w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+	} else {
+		newEid = eid
+	}
 	registration := fd.repository.retrieveRegistration(newEid)
 	w.WriteJson(registration)
 }

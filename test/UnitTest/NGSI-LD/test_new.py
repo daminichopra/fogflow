@@ -82,3 +82,111 @@ def test_case80():
 	rget = requests.get(getURL)
         assert rget.content == "200"
 
+#To test get Entity by Eid from broker if FiwareService is provided
+def test_case81():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertCommand),headers=headers)
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001"
+        r = requests.get(url,headers=headers)
+        assert r.status_code == 200
+
+
+# To test get Entity form broker By Eid if FiwareService is not provided
+
+def test_case82():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertCommand),headers=headers)
+        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001"
+        r = requests.get(url,headers=headers)
+        assert r.status_code == 200
+
+
+# To test get all Entity from broker if FiwareService is provided
+def test_case83():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertMultipleCommand),headers=headers)
+        url=brokerIp+"/ngsi-ld/v1/entities?type=Device"
+        r = requests.get(url,headers=headers)
+        assert r.status_code == 200
+
+# To test get Entity form broker if FiwareService is not provided
+def test_case84():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertMultipleCommand),headers=headers)
+        url=brokerIp+"/ngsi-ld/v1/entities?type=Device"
+        r = requests.get(url,headers=headers)
+        assert r.status_code == 200
+
+
+# Test if registration of entity is available in discovery or not if fiwareService is provided
+def test_case85():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' ,'fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertCommand),headers=headers)
+        url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Device:water001"
+        r = requests.get(url,headers=headers)
+        assert r.status_code == 200
+
+
+#test if registration of entity is available in discovery or not if fiwareService is not provided
+def test_case86():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertCommand),headers=headers)
+        url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Device:water001"
+        r = requests.get(url,headers=headers)
+        assert r.status_code == 200
+
+#test response of discovery if Entity does not exist in the disovery with fiwareService 
+def test_case87():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"','fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertCommand),headers=headers)
+        url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Device:water0010"
+        r = requests.get(url,headers=headers)
+        assert r.content == "null"
+
+#test response of discovery if Entity does not exist in the disovery without fiwareService
+def test_case88():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.upsertCommand),headers=headers)
+        url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Device:water0010"
+        r = requests.get(url,headers=headers)
+        assert r.content == "null"
+
+# test Delete Entity from thinbroker if FiwareService is provided
+
+def test_case89():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"','fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        r=requests.post(url,data=json.dumps(ld_data.DelData),headers=headers)
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A109"
+        rget = requests.get(url,headers=headers)
+        assert rget.status_code == 200
+	delURL=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A109"
+	r = requests.delete(delURL,headers=headers)
+	rget = requests.get(url,headers=headers)
+	assert rget.status_code == 404
+
+# test creation of Entity in one fiwareService and delete the Entity with same id in different fiwareService
+
+def test_case90():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.test89),headers=headers)
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Device:test89"
+	rget = requests.get(url,headers=headers)
+	assert rget.status_code == 200
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"','fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        delURL=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Device:test89"
+	rDel = requests.delete(delURL,headers=headers)
+	assert rDel.status_code == 404
+	assert rget.status_code == 200
+
+
+

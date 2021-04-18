@@ -1975,12 +1975,86 @@ subData80 = \
                }
  }
 
-upsertCommand = \
-[{
+upsertMultipleCommand = \
+[
+  {
   	"id": "urn:ngsi-ld:Device:water001",
   	"type": "Device",
-  	"on": {
+  	"on1": {
   		"type": "Property",
   		"value": " "
   	}
-}]
+   },
+   {
+        "id": "urn:ngsi-ld:Device:water002",
+        "type": "Device",
+        "on2": {
+                "type": "Property",
+                "value": " "
+        }
+   },
+   {
+        "id": "urn:ngsi-ld:Device:water003",
+        "type": "Device",
+        "on3": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+upsertCommand = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:water001",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+DelData= \
+ [{
+ 	"id": "urn:ngsi-ld:Vehicle:A109",
+ 	"type": "Device",
+ 	"brandName": {
+ 		"type": "Property",
+ 		"value": "xyzeee"
+ 	},
+ 	"isParked": {
+ 		"type": "Relationship",
+ 		"object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+ 		"providedBy": {
+ 			"type": "Relationship",
+ 			"object": "urn:ngsi-ld:Person:Bob"
+ 		}
+ 	},
+ 	"speed": {
+ 		"type": "Property",
+ 		"value": 30
+ 	},
+ 	"location": {
+ 		"type": "GeoProperty",
+ 		"value": {
+ 			"type": "Point",
+ 			"coordinates": [-8.5, 41.2]
+ 		}
+ 	}
+ }]
+test89 = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:test89",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+

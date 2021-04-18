@@ -159,7 +159,7 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 
 	inputSubscription := flow.Subscriptions[subID]
 	entityID := registredEntity.ID
-	fmt.Println("@@@@@@@@@@@@@@registredEntity@@@@@@@@@@@",registredEntity)
+	fmt.Println("@@@@@@@@@@@@@@registredEntity@@@@@@@@@@@", registredEntity)
 	switch entityAction {
 	case "CREATE", "UPDATE":
 		//update context availability
@@ -241,7 +241,7 @@ func (flow *FogFlow) checkInputsOfTaskInstance(taskCfg *TaskConfig) bool {
 
 func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *InputSubscription) []*DeploymentAction {
 	groups := flow.getRelevantGroups(inputSubscription, entityID)
-	fmt.Println("@@@@@groups@@@@@@@@@",groups)
+	fmt.Println("@@@@@groups@@@@@@@@@", groups)
 	deploymentActions := make([]*DeploymentAction, 0)
 
 	for _, group := range groups {
@@ -866,8 +866,8 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 	defer tMgr.fogFlows_lock.Unlock()
 	fiwareServicePath := entityRegistration.FiwareServicePath
 	mgsFormat := entityRegistration.MsgFormat
-	fmt.Println("FiwareServicePath",fiwareServicePath)
-	fmt.Println("This is MgsFormat",mgsFormat)
+	fmt.Println("FiwareServicePath", fiwareServicePath)
+	fmt.Println("This is MgsFormat", mgsFormat)
 	fogflow := tMgr.fogFlows[funcName]
 	DEBUG.Printf("~~~~~~~ access the flow %+s, %+v ~~~~~~~~~~~~~~~~~\r\n", funcName, fogflow)
 
@@ -888,8 +888,8 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			INFO.Printf("add task %+v\r\n", deploymentAction.ActionInfo)
 
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
-			fmt.Println("@@@@@@@@scheduledTaskInstance@@@@@@@@@@",scheduledTaskInstance)
-			scheduledTaskInstance = SetFiwareServicePath(scheduledTaskInstance,fiwareServicePath,mgsFormat)
+			fmt.Println("@@@@@@@@scheduledTaskInstance@@@@@@@@@@", scheduledTaskInstance)
+			scheduledTaskInstance = SetFiwareServicePath(scheduledTaskInstance, fiwareServicePath, mgsFormat)
 			// figure out where to deploy this task instance
 			itemList := strings.Split(scheduledTaskInstance.ID, ".")
 			hashID := itemList[len(itemList)-1]

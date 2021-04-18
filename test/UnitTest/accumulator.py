@@ -21,6 +21,12 @@ def upsertNotification():
     entityIdDict[id] = 1
     return "Done"
 
+@app.route('/ngsi-ld/v1/entities/<entityId>/attrs/on', methods=['PATCH'])
+def upsertNotification(entityId):
+    global entityIdDict
+    entityIdDict[entityId] = 1
+    return "Done"
+
 @app.route('/validateupsert/<entityId>')
 def upsertNotificationvalidator(entityId):
     global entityIdDict

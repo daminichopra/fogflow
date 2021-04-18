@@ -320,11 +320,11 @@ func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request)
 	var newEid string
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
 		if r.Header.Get("fiware-service") != "" {
-                       	newEid =  eid + "@" + r.Header.Get("fiware-service")
-                        w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-                } else {
-                        newEid =  eid + "@" + "default"
-                }
+			newEid = eid + "@" + r.Header.Get("fiware-service")
+			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+		} else {
+			newEid = eid + "@" + "default"
+		}
 		err := apisrv.broker.ldDeleteEntity(newEid)
 		if err == nil {
 			w.WriteHeader(204)
@@ -343,16 +343,16 @@ func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 	var newEid string
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json" || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*" {
 		if r.Header.Get("fiware-service") != "" {
-			newEid =  eid + "@" + r.Header.Get("fiware-service")
+			newEid = eid + "@" + r.Header.Get("fiware-service")
 			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
 		} else {
-			newEid =  eid + "@" + "default"
+			newEid = eid + "@" + "default"
 		}
 
 		if r.Header.Get("fiware-servicepath") != "" {
 			w.Header().Set("fiware-servicepath", r.Header.Get("fiware-servicepath"))
 		}
-		fmt.Println("newEid",newEid)
+		fmt.Println("newEid", newEid)
 		entity := apisrv.broker.ldGetEntity(newEid)
 		if entity != nil {
 			if accept == "application/json" || accept == " " {
@@ -374,10 +374,11 @@ func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 // To get query parameters from NGSI-LD Entity Query Requests
 func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.Request) {
 	queryValues := r.URL.Query()
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" { 
+	fmt.Println("queryValues", queryValues)
+	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" {
 		var fiwareService string
 		if r.Header.Get("fiware-service") != "" {
-			fiwareService  = r.Header.Get("fiware-service")
+			fiwareService = r.Header.Get("fiware-service")
 			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
 		} else {
 			fiwareService = "default"
@@ -397,7 +398,7 @@ func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.
 				return
 			}
 
-			entities := apisrv.broker.ldEntityGetByAttribute(attrs,fiwareService)
+			entities := apisrv.broker.ldEntityGetByAttribute(attrs, fiwareService)
 			if len(entities) > 0 {
 				w.WriteHeader(200)
 				w.WriteJson(entities)

@@ -424,12 +424,12 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 		if inputStream.MsgFormat == "NGSILD" {
 			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
 			if err == nil {
-                                DEBUG.Println("===========subID = ", subID)
-                                taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-                                taskCtx.EntityID2SubID[inputStream.ID] = subID
-                        } else {
-                                ERROR.Println(err)
-                        }
+				DEBUG.Println("===========subID = ", subID)
+				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+				taskCtx.EntityID2SubID[inputStream.ID] = subID
+			} else {
+				ERROR.Println(err)
+			}
 
 		}
 	}
@@ -599,18 +599,18 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	var Fs, Fsp, ID string
 	if len(inputStream.ID) > 0 { // for a specific context entity
 		newEntity.Type = inputStream.Type
-		fmt.Println("inputStream.ID",inputStream.ID)
-		ID,Fs = FiwareId(inputStream.ID)
+		fmt.Println("inputStream.ID", inputStream.ID)
+		ID, Fs = FiwareId(inputStream.ID)
 		fmt.Println(ID)
 		if Fs == "default" {
 			Fs = ""
 		}
 		newEntity.ID = ID
-		Fsp  = inputStream.FiwareServicePath
+		Fsp = inputStream.FiwareServicePath
 	} else { // for all context entities with a specific type
 		newEntity.Type = inputStream.Type
 	}
-	fmt.Println("FS,FSP",Fs,Fsp)
+	fmt.Println("FS,FSP", Fs, Fsp)
 	if Fs != "" && Fsp == "" {
 		Fsp = "/"
 	}
@@ -625,7 +625,7 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	brokerURL := e.brokerURL
 	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
 	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	sid, err := client.SubscribeLdContext(&LdSubscription, true,Fs,Fsp)
+	sid, err := client.SubscribeLdContext(&LdSubscription, true, Fs, Fsp)
 	if err != nil {
 		ERROR.Println(err)
 		return "", err
@@ -854,8 +854,8 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 			ERROR.Println(err)
 		}
 	}*/
-	fmt.Println("MSG format",flow.InputStream. MsgFormat)
-	if  flow.InputStream. MsgFormat == "NGSIV1" {
+	fmt.Println("MSG format", flow.InputStream.MsgFormat)
+	if flow.InputStream.MsgFormat == "NGSIV1" {
 		subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
 		if err == nil {
 			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
@@ -865,7 +865,7 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 			ERROR.Println(err)
 		}
 	}
-	if flow.InputStream. MsgFormat == "NGSILD" {
+	if flow.InputStream.MsgFormat == "NGSILD" {
 		subID, err := e.subscribeLdInputStream(taskCtx.ListeningPort, &flow.InputStream)
 		if err == nil {
 			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
@@ -874,7 +874,7 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 		} else {
 			ERROR.Println(err)
 		}
-	} 
+	}
 }
 
 func (e *Executor) onRemoveInput(flow *FlowInfo) {
