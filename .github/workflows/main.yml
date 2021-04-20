@@ -21,6 +21,7 @@ jobs:
         
     - name: Docker Build Job
       run: |
+        ls
         export GOBIN=/home/runner/go/bin
         docker --version
         echo "build discovery"
