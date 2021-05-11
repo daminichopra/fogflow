@@ -427,19 +427,27 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 var ExpandOnce sync.Once
 var CompactOnce sync.Once
-var ldE *ld.RFC7324CachingDocumentLoader
+
+//var ldE *ld.RFC7324CachingDocumentLoader
 var ldC *ld.RFC7324CachingDocumentLoader
 var expand_lock sync.RWMutex
 
 var compact_lock sync.RWMutex
-//creating expand singleton object for document loader
 
-func Expand_once() *ld.RFC7324CachingDocumentLoader {
+//creating expand singleton object for document loader
+var mapE = make(map[string]interface{})
+
+func Expand_once(contextLinkKey string) *ld.RFC7324CachingDocumentLoader {
+	var ldE *ld.RFC7324CachingDocumentLoader
+	if ldE1, ok := mapE[contextLinkKey]; ok {
+		ldE = ldE1.(*ld.RFC7324CachingDocumentLoader)
+	}
 	if ldE == nil {
 		ExpandOnce.Do(
 			func() {
 				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
 				fmt.Println("created object", ldE)
+				mapE[contextLinkKey] = ldE
 			})
 	} else {
 		fmt.Println("The loader object is already created")
