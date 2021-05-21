@@ -1,10 +1,15 @@
 FROM golang:1.16 AS builder 
 WORKDIR /go/src/
-RUN git clone https://github.com/smartfog/fogflow.git  
-WORKDIR /go/src/fogflow/discovery
-RUN go get; go build;
+ADD /discovery discovery/
+ADD /common common/
+ADD go.mod .
+ADD go.sum . 
+RUN ls 
+WORKDIR /go/src/discovery
+RUN go get; 
+RUN CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo   -o broker
 
 FROM scratch
-COPY --from=builder /go/src/fogflow/discovery/discovery  /
+COPY --from=builder /go/src/discovery/discovery  /
 CMD ["/discovery"]
 
