@@ -7,7 +7,7 @@ ADD go.sum .
 RUN ls 
 WORKDIR /go/src/discovery
 RUN go get; 
-RUN CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo   -o broker
+RUN CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo   -o discovery
 
 FROM scratch
 COPY --from=builder /go/src/discovery/discovery  /
