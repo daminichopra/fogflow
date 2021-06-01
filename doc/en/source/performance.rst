@@ -10,14 +10,13 @@ This tutorial introduces the performace evaluation of NGSILD based context manag
 
 
 Experiement Setup
--------------------
+------------------------------------------------
 
-**Deployment environment:** To test the performance, I have deployed one cloud node(vCPUs, 4 GB RAM) and two edge node(2vCPUs, 4 GB RAM) in doker container. 
+**FogFlow system:** To test the performance, I have deployed one cloud node(2vCPUs, 4 GB RAM) and two edge node(2vCPUs, 4 GB RAM) in doker container. 
 
-**test client:**
+**Listener client:** To measure the delay of context update from the moment sent by a context producer to the time received by a subscriber we are using listener client. Listener client is deployed on localhost(5cpu, 8GB RAM)
 
-**testing tool:** TO produce the test data for fogflow broker we are using Apache JMeter testing tool.
-
+**Testing tool:** TO produce the test data for fogflow broker we are using Apache JMeter testing tool. JMeter is deployed on localhost(5cpu, 8GB RAM)
 
 Throughput and latency to create new entities
 --------------------------------------------------
