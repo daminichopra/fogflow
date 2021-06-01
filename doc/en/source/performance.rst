@@ -6,6 +6,8 @@ Performance Evaluation
 Performance of NGSI-LD based thinBroker in FogFlow 
 ================================================================
 
+This tutorial introduces the performace evaluation of NGSILD based context management systems of the FogFlow framework. Our analyses include the performance comparision of FogFlow broker with other NGSILD broker(orion broker, stelio Broker, Scorpio Broker) in terms of  throughput (number of messages per second) and response time/message propagation latency , and  efficiency of context availability discoveries and context transfers in the smart city scale.Moreover, we analyze the scalability of FogFlow using multiple IoT Brokers.
+
 
 Experiement Setup
 -------------------
