@@ -15,9 +15,11 @@ Experiement Setup
 to explain the system environment for the performance evaluation, such as how FogFlow is deployed and where is the test client,
 which tool to generate the test workload
 
-**Deployment Model:** 
+**Deployment environment:** To test the performance, I have deployed one cloud node(vCPUs, 4 GB RAM) and two edge node(2vCPUs, 4 GB RAM) in doker container. 
 
-**test client and testing tool:**
+**test client:**
+
+**testing tool:** TO produce the test data for fogflow broker we are using Apache JMeter testing tool.
 
 
 Throughput and latency to create new entities
