@@ -12,9 +12,6 @@ This tutorial introduces the performace evaluation of NGSILD based context manag
 Experiement Setup
 -------------------
 
-to explain the system environment for the performance evaluation, such as how FogFlow is deployed and where is the test client,
-which tool to generate the test workload
-
 **Deployment environment:** To test the performance, I have deployed one cloud node(vCPUs, 4 GB RAM) and two edge node(2vCPUs, 4 GB RAM) in doker container. 
 
 **test client:**
