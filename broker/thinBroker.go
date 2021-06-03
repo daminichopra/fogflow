@@ -1978,18 +1978,21 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 			cType := r.Header.Get("Content-Type")
 			cTypeInLower := strings.ToLower(cType)
 			Link := r.Header.Get("Link")
-			//if Link == "" {
-			//	fmt.Println("Link is blank")
-			//}
 			if cTypeInLower == "application/ld+json" {
 				contextInPayload = true
 			} else {
-				/*if link := r.Header.Get("Link"); link != "" {
-					linkMap := tb.extractLinkHeaderFields(link)
-					if linkMap["rel"] != DEFAULT_CONTEXT {
+				if link := r.Header.Get("Link"); link != "" {
+					link := extractLinkHeaderFields(link)
+					if link == "default" {
+						fmt.Println("if Link is <{{link}}>")
+						context = append(context, DEFAULT_CONTEXT)
+					} else {
+						context = append(context, link)
 					}
-				}*/
-				context = append(context, DEFAULT_CONTEXT)
+				} else {
+					fmt.Println("link is not there")
+					context = append(context, DEFAULT_CONTEXT)
+				}
 			}
 			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
 			if err != nil {
@@ -2418,8 +2421,8 @@ func (tb *ThinBroker) createOriginalPayload(entity interface{}) interface{} {
 }*/
 
 func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Request) {
-	var context []interface{}
-	context = append(context, DEFAULT_CONTEXT)
+	//var context []interface{}
+	//context = append(context, DEFAULT_CONTEXT)
 	//Also allow the header to json+ld for specific cases
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		var fiwareService string
@@ -2435,13 +2438,26 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 			fiwareServicePath = "default"
 		}
 		fmt.Println(fiwareServicePath)
-		contextInPayload := true
-		//Get Link header if present
-		if link := r.Header.Get("Link"); link != "" {
-			contextInPayload = false                    // Context in Link header
-			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-			if linkMap["rel"] != DEFAULT_CONTEXT {
-				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
+		var context []interface{}
+		contextInPayload := false
+		cType := r.Header.Get("Content-Type")
+		cTypeInLower := strings.ToLower(cType)
+		//Link := r.Header.Get("Link")
+		if cTypeInLower == "application/ld+json" {
+			contextInPayload = true
+		} else {
+			if link := r.Header.Get("Link"); link != "" {
+				link := extractLinkHeaderFields(link)
+				fmt.Println(link)
+				if link == "default" {
+					fmt.Println("if Link is <{{link}}>")
+					context = append(context, DEFAULT_CONTEXT)
+				} else {
+					context = append(context, link)
+				}
+			} else {
+				fmt.Println("link is not there")
+				context = append(context, DEFAULT_CONTEXT)
 			}
 		}
 
@@ -2745,9 +2761,9 @@ func (tb *ThinBroker) ExpandAttributePayload(r *rest.Request, context []interfac
 }
 
 func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
-	linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+	newLink := extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
 	var context []interface{}
-	context = append(context, linkMap["rel"])
+	context = append(context, newLink)
 
 	itemsMap := make(map[string]interface{})
 	itemsMap["@context"] = context
@@ -2802,7 +2818,7 @@ func (tb *ThinBroker) getStringInterfaceMap(ctx interface{}) (map[string]interfa
 	}
 }
 
-func (tb *ThinBroker) extractLinkHeaderFields(link string) map[string]string {
+/*func (tb *ThinBroker) extractLinkHeaderFields(link string) map[string]string {
 	mp := make(map[string]string)
 	linkArray := strings.Split(link, ";")
 
@@ -2820,7 +2836,7 @@ func (tb *ThinBroker) extractLinkHeaderFields(link string) map[string]string {
 	}
 
 	return mp
-}
+}*/
 
 func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 	inLocalBroker := true
@@ -3571,16 +3587,38 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 
 // Subscription
 func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-	var context []interface{}
+	//var context []interface{}
 	sid := r.PathParam("sid")
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		if link := r.Header.Get("Link"); link != "" {
-			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-			if linkMap["rel"] != DEFAULT_CONTEXT {
+		/*if link := r.Header.Get("Link"); link != "" {
+			link := extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+			if link != DEFAULT_CONTEXT {
 				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
 			}
 		}
-		context = append(context, DEFAULT_CONTEXT)
+		context = append(context, DEFAULT_CONTEXT)*/
+		var context []interface{}
+		contextInPayload := false
+		cType := r.Header.Get("Content-Type")
+		cTypeInLower := strings.ToLower(cType)
+		//Link := r.Header.Get("Link")
+		if cTypeInLower == "application/ld+json" {
+			contextInPayload = true
+		} else {
+			if link := r.Header.Get("Link"); link != "" {
+				link := extractLinkHeaderFields(link)
+				fmt.Println(link)
+				if link == "default" {
+					fmt.Println("if Link is <{{link}}>")
+					context = append(context, DEFAULT_CONTEXT)
+				} else {
+					context = append(context, link)
+				}
+			} else {
+				fmt.Println("link is not there")
+				context = append(context, DEFAULT_CONTEXT)
+			}
+		}
 		tb.ldSubscriptions_lock.Lock()
 		if _, ok := tb.ldSubscriptions[sid]; ok == true {
 			tb.ldSubscriptions_lock.Unlock()
@@ -3594,7 +3632,7 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			resolved, err := tb.ExpandPayload(LDUpdateSubscribeCtxReq, context, false) // Context in Link header
+			resolved, err := tb.ExpandPayload(LDUpdateSubscribeCtxReq, context, contextInPayload) // Context in Link header
 
 			if err != nil {
 				if err.Error() == "EmptyPayload!" {

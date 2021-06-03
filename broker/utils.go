@@ -432,6 +432,7 @@ var ldC *ld.RFC7324CachingDocumentLoader
 var expand_lock sync.RWMutex
 
 var compact_lock sync.RWMutex
+
 //creating expand singleton object for document loader
 
 func Expand_once() *ld.RFC7324CachingDocumentLoader {
@@ -440,7 +441,7 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 			func() {
 				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
 				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-				fmt.Println("created object", ldE,err)
+				fmt.Println("created object", ldE, err)
 			})
 	} else {
 		fmt.Println("The loader object is already created")
@@ -456,7 +457,7 @@ func Compact_once() *ld.RFC7324CachingDocumentLoader {
 			func() {
 				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
 				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-				fmt.Println("created object", ldC,err)
+				fmt.Println("created object", ldC, err)
 			})
 	} else {
 		fmt.Println("The loader object is already created")
@@ -766,4 +767,19 @@ func unsubscribeContextLDProvider(sid string, ProviderURL string, httpsCfg *HTTP
 		err = errors.New(unsubscribeCtxResp.StatusCode.ReasonPhrase)
 		return err
 	}
+}
+
+func extractLinkHeaderFields(link string) string {
+	var splitLink string
+	linkArray := strings.Split(link, ";")
+	extractedLink := linkArray[0]
+	leftTrim := strings.TrimLeft(extractedLink, "<")
+	newlink := strings.TrimRight(leftTrim, ">")
+	if strings.HasPrefix(newlink, "http") {
+		splitLink = string(newlink)
+	} else {
+		splitLink = "default"
+	}
+
+	return splitLink
 }
