@@ -2762,7 +2762,11 @@ func (tb *ThinBroker) ExpandAttributePayload(r *rest.Request, context []interfac
 
 func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 	newLink := extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+	fmt.Println("newLink",newLink)
 	var context []interface{}
+	if newLink == "default" {
+		newLink = DEFAULT_CONTEXT 
+	}
 	context = append(context, newLink)
 
 	itemsMap := make(map[string]interface{})
