@@ -21,7 +21,9 @@ Experiement Setup
 Throughput and latency to create new entities
 --------------------------------------------------
 
-to evaluate how fast a new NGSI-LD entity can be created
+**Entity creation** 
+
+.. figure:: figures/v1LDCompare.png
 
 to compare the performance with the other NGSI-LD brokers
 
