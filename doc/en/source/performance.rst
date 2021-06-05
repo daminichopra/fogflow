@@ -25,7 +25,11 @@ Throughput and latency to create new entities
 
 .. figure:: figures/v1LDCompare.png
 
-to compare the performance with the other NGSI-LD brokers
+**Performance comparision between with orion-LD:**
+
+.. figure:: figures/FogOrion50_200.png
+
+.. figure:: figures/FogOrion100_200.png
 
 to test how the performance can be scaled up with more FogFlow edge nodes
 
