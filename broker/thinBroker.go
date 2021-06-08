@@ -1984,13 +1984,11 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				if link := r.Header.Get("Link"); link != "" {
 					link := extractLinkHeaderFields(link)
 					if link == "default" {
-						fmt.Println("if Link is <{{link}}>")
 						context = append(context, DEFAULT_CONTEXT)
 					} else {
 						context = append(context, link)
 					}
 				} else {
-					fmt.Println("link is not there")
 					context = append(context, DEFAULT_CONTEXT)
 				}
 			}
@@ -2022,7 +2020,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					res.Errors = append(res.Errors, problemSet)
 					continue
 				}
-				//res.Errors.Details  = "Unknown"
 				problemSet := ProblemDetails{}
 				problemSet.Details = "Unkown!"
 				res.Errors = append(res.Errors, problemSet)
@@ -2682,10 +2679,12 @@ func (tb *ThinBroker) ExpandPayload(ctx interface{}, context []interface{}, cont
 
 		// Update Context in itemMap
 		if contextInPayload == true && itemsMap["@context"] != nil {
+			fmt.Println("########itemsMap[@context]#######",itemsMap["@context"])
 			contextItems := itemsMap["@context"].([]interface{})
 			context = append(context, contextItems...)
 		}
 		itemsMap["@context"] = context
+		fmt.Println("itemsMap[@context] = context",itemsMap["@context"])
 
 		if expanded, err := tb.ExpandData(itemsMap); err != nil {
 			return nil, err
