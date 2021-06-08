@@ -37,6 +37,20 @@ Throughput and latency to create new entities
 
 .. figure:: figures/FogOrion500_200.png
 
+
+**Subscription:**
+
+.. figure:: figures/FogSub50.png
+
+.. figure:: figures/FogSub100.png
+
+.. figure:: figures/FogSub200.png
+
+.. figure:: figures/FogSub400.png
+
+.. figure:: figures/FogSub500.png
+
+
 to test how the performance can be scaled up with more FogFlow edge nodes
 
 
