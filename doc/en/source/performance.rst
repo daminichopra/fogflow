@@ -25,17 +25,28 @@ Throughput and latency to create new entities
 
 .. figure:: figures/v1LDCompare.png
 
-**Performance comparision between with orion-LD:**
+**Performance comparision between with orion-LD:** To comparion upseert API with orion-ld we are considering various number of threads (clients) in a smart city (50, 100, 200, 400, 500 entities).  The threads may represent devices, such as sensor nodes in a smart city or applications accessing the system.  
+
+**Senorio-1** In the frist senorion we are taking 50 thread and every thread is executiong 200 request.
 
 .. figure:: figures/FogOrion50_200.png
 
+**Senorio-2** In the frist senorion we are taking 100 thread and every thread is executiong 200 request.
+
 .. figure:: figures/FogOrion100_200.png
+
+**Senorio-3** In the frist senorion we are taking 200 thread and every thread is executiong 200 request.
 
 .. figure:: figures/FogOrion200_200.png
 
+**Senorio-4** In the frist senorion we are taking 400 thread and every thread is executiong 200 request.
+
 .. figure:: figures/FogOrion400_200.png
 
+**Senorio-5** In the frist senorion we are taking 500 thread and every thread is executiong 200 request.
+
 .. figure:: figures/FogOrion500_200.png
+
 
 
 **Subscription:**
@@ -75,5 +86,3 @@ to measure how many updates can flow from the context producer to the subscriber
 to compare the performance with the other NGSI-LD brokers
 
 to test how the performance can be scaled up with more subscribers
-
-
