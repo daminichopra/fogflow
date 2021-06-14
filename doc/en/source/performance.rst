@@ -31,19 +31,19 @@ Throughput and latency to create new entities
 
 .. figure:: figures/FogOrion50_200.png
 
-**Senorio-2** In the frist senorion we are taking 100 thread and every thread is executiong 200 request.
+**Senorio-2** In the second senorion we are taking 100 thread and every thread is executiong 200 request.
 
 .. figure:: figures/FogOrion100_200.png
 
-**Senorio-3** In the frist senorion we are taking 200 thread and every thread is executiong 200 request.
+**Senorio-3** In the third senorion we are taking 200 thread and every thread is executiong 200 request.
 
 .. figure:: figures/FogOrion200_200.png
 
-**Senorio-4** In the frist senorion we are taking 400 thread and every thread is executiong 200 request.
+**Senorio-4** In the forth senorion we are taking 400 thread and every thread is executiong 200 request.
 
 .. figure:: figures/FogOrion400_200.png
 
-**Senorio-5** In the frist senorion we are taking 500 thread and every thread is executiong 200 request.
+**Senorio-5** In the fifth senorion we are taking 500 thread and every thread is executiong 200 request.
 
 .. figure:: figures/FogOrion500_200.png
 
