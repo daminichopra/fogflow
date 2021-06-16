@@ -1947,6 +1947,7 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 // NGSI-LD starts from here.
 
 func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
+	fmt.Println("This is update tequest")
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
 	var fiwareService string
 	//var fiwareServicePath string
@@ -1993,6 +1994,8 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				}
 			}
 			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
+			fmt.Println(resolved)
+			fmt.Println("Err",err)
 			if err != nil {
 
 				if err.Error() == "EmptyPayload!" {
@@ -2029,6 +2032,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 				// Deserialize the payload here.
 				deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+				fmt.Println("err",err)
 				if err != nil {
 					problemSet := ProblemDetails{}
 					problemSet.Details = "Problem in deserialization"
@@ -2055,10 +2059,12 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					}
 					deSerializedEntity["fiwareServicePath"] = fsp
 					res.Success = append(res.Success, deSerializedEntity["id"].(string))
+					fmt.Println("working on deserialization")
 					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 				}
 			}
 		}
+		fmt.Println("Res",res)
 		if res.Errors != nil && res.Success == nil {
 			w.WriteHeader(404)
 			w.WriteJson(&res)
@@ -2257,13 +2263,18 @@ func (tb *ThinBroker) UpdateLdContext2LocalSite(updateCtxReq map[string]interfac
 
 func (tb *ThinBroker) UpdateLdContext2RemoteSite(updateCtxReq map[string]interface{}, brokerURL string, link string) {
 	INFO.Println(brokerURL)
-	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: tb.SecurityCfg}
+	LDBrokerURL := strings.TrimSuffix(brokerURL, "/ngsi10")
+	if link != "" {
+                delete(updateCtxReq, "@context")
+        }
+	client := NGSI10Client{IoTBrokerURL: LDBrokerURL, SecurityCfg: tb.SecurityCfg}
 	client.CreateLDEntityOnRemote(updateCtxReq, link)
 }
 
 func (tb *ThinBroker) handleLdExternalUpdateContext(updateCtxReq map[string]interface{}, link string) {
 	eid := getId(updateCtxReq)
 	brokerURL := tb.queryOwnerOfLDEntity(eid)
+	fmt.Println(brokerURL)
 	if brokerURL == tb.myProfile.MyURL {
 		tb.UpdateLdContext2LocalSite(updateCtxReq)
 	} else {
@@ -2679,7 +2690,7 @@ func (tb *ThinBroker) ExpandPayload(ctx interface{}, context []interface{}, cont
 
 		// Update Context in itemMap
 		if contextInPayload == true && itemsMap["@context"] != nil {
-			fmt.Println("########itemsMap[@context]#######",itemsMap["@context"])
+		//	fmt.Println("########itemsMap[@context]#######",itemsMap["@context"])
 			contextItems := itemsMap["@context"].([]interface{})
 			context = append(context, contextItems...)
 		}

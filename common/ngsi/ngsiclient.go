@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"fmt"
 )
 
 type NGSI10Client struct {
@@ -789,20 +791,37 @@ func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
 // NGSI-LD feature addition
 
 func (nc *NGSI10Client) CreateLDEntityOnRemote(elem map[string]interface{}, link string) error {
-	body, err := json.Marshal(elem)
-	if err != nil {
-		return err
-	}
-	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/", bytes.NewBuffer(body))
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/ld+json")
+	id := elem["id"].(string)
+        idSplit := strings.Split(id, "@")
+        elem["id"] = idSplit[0]
+        fiwareService := idSplit[1]
+        fiwareServicePath := elem["fiwareServicePath"].(string)
+        delete(elem, "fiwareServicePath")
+        var upsertBody [1]interface{}
+        fmt.Println("Ele",elem)
+        upsertBody[0] = elem
+        fmt.Println("upsertBody",upsertBody)
+        body, err := json.Marshal(upsertBody)
+        if err != nil {
+                return err
+        }
+        req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entityOperations/upsert", bytes.NewBuffer(body))
+        req.Header.Add("Accept", "application/ld+json")
 
-	if link != "" {
-		req.Header.Add("Link", link)
-	}
-
-	client := nc.SecurityCfg.GetHTTPClient()
-	resp, err := client.Do(req)
+        if link != "" {
+                req.Header.Add("Link", link)
+                req.Header.Add("Content-Type", "application/json")
+        } else {
+                req.Header.Add("Content-Type", "application/ld+json")
+        }
+        if fiwareService != "default" {
+                req.Header.Add("fiware-service", fiwareService)
+        }
+        if fiwareServicePath != "default" {
+                req.Header.Add("fiware-servicepath", fiwareServicePath)
+        }
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, err := client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
