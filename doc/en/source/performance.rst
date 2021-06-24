@@ -23,7 +23,7 @@ Throughput and latency to create new entities
 
 **Throughput and latency of upsert API** 
 
-.. figure:: figures/v1LDCompare.png
+.. figure:: figures/throughtPut.png
 
 **Performance comparision with orion-LD for upsert API:** To comparion upseert API with orion-ld we are considering various number of threads (clients) in a smart city (50, 100, 200, 400, 500 entities).  The threads may represent devices, such as sensor nodes in a smart city or applications accessing the system.  
 
