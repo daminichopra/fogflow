@@ -25,7 +25,9 @@ Throughput and latency to create new entities
 
 .. figure:: figures/throughtPut.png
 
-**Performance comparision with orion-LD for upsert API:** To comparion upseert API with orion-ld we are considering various number of threads (clients) in a smart city (50, 100, 200, 400, 500 entities).  The threads may represent devices, such as sensor nodes in a smart city or applications accessing the system.  
+**Performance comparision with orion-LD for upsert API:** 
+-------------------------------------------------------------------
+To comparion upseert API with orion-ld we are considering various number of threads (clients) in a smart city (50, 100, 200, 400, 500 entities).  The threads may represent devices, such as sensor nodes in a smart city or applications accessing the system.  
 
 **Senorio-1:** In the frist scenario 50 threads were utilised and every thread executed 200 requests.
 
@@ -71,6 +73,7 @@ The above graphs are representing **latency on y-axis and time on x-axis**. The 
 *Hence for this scenario Fogflow broker is a better performer than Orion-LD broker.*
 
 **Performance comparision with orion-LD for Subscription API:**
+---------------------------------------------------------------------
 
 **Senorio-1:** In the frist scenario 50 threads were utilised and every thread executed 200 requests.
 
