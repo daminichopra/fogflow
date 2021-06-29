@@ -70,18 +70,31 @@ The above graphs are representing **latency on y-axis and time on x-axis**. The 
 
 *Hence for this scenario Fogflow broker is a better performer than Orion-LD broker.*
 
+**Performance comparision with orion-LD for Subscription API:**
 
-**Performance comparision with orion-LD for upsert API:**
+**Senorio-1:** In the frist scenario 50 threads were utilised and every thread executed 200 requests.
 
 .. figure:: figures/FogSub50.png
 
+**Senorio-2:** In the second scenario 100 threads were utilised and every thread executed 200 requests.
+
 .. figure:: figures/FogSub100.png
+
+**Senorio-3:** In the third sceanrio 200 threads were utilised and every thread executed 200 requests.
 
 .. figure:: figures/FogSub200.png
 
+**Senorio-4:** In the fourth scenario 400 threads were utilised and every thread executed 200 requests.
+
 .. figure:: figures/FogSub400.png
 
+**Senorio-5:** In the fifth scenario 500 threads were utilised and every thread executed 200 requests.
+
 .. figure:: figures/FogSub500.png
+
+
+**Conclusion:**
+The above graphs are representing **latency on y-axis and time on x-axis**. The above graphs, on detailed analysis shows that Fogflow broker is bit behind in performance in case of subscription API. It is beacuse the graphs and supporting data highlights the fact of time duration cosumed by Fogflow broker is little bit more than that of Orion-Ld broker.  This is because of the fact that subscription in case of Fogflow is dependent on other Fogflow components like discovery for its further analysis, until subscription API sends response of that request made.
 
 
 to test how the performance can be scaled up with more FogFlow edge nodes
