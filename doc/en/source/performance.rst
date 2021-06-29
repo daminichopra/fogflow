@@ -27,32 +27,48 @@ Throughput and latency to create new entities
 
 **Performance comparision with orion-LD for upsert API:** To comparion upseert API with orion-ld we are considering various number of threads (clients) in a smart city (50, 100, 200, 400, 500 entities).  The threads may represent devices, such as sensor nodes in a smart city or applications accessing the system.  
 
-**Senorio-1:** In the frist scenario 50 thread were utilised and every thread executed 200 requests.
+**Senorio-1:** In the frist scenario 50 threads were utilised and every thread executed 200 requests.
 
 .. figure:: figures/FogOrion50_200.png
 
 
 The above graphs are representing **latency on y-axis and time on x-axis**. The above graphs depicts the fact that Fogflow broker is better in handling 10,000 thousand requests in an efficient manner when compared to Orion-Ld broker. With detailed anayalsis made on graphs as well as the supporting data, the fact that **Fogflow broker** handles **10,000** request in **14036 ms with low average latency** is an index which reflects the better performance of Fogflow broker over Orion-Ld Broker. **Orion-Ld broker** handles the same number of request within **greater time duration i.e. 20871 ms with higher average latency** than Fogflow.
 
-**Hence for this scenario Fogflow broker is a better performer than Orion-LD broker.**
+*Hence for this scenario Fogflow broker is a better performer than Orion-LD broker.*
 
 
-**Senorio-2:** In the second senorion we are taking 100 thread and every thread is executiong 200 request.
+**Senorio-2:** In the second scenario 100 threads were utilised and every thread executed 200 requests.
 
 .. figure:: figures/FogOrion100_200.png
 
-**Senorio-3:** In the third senorion we are taking 200 thread and every thread is executiong 200 request.
+
+**Senorio-3:** In the third sceanrio 200 threads were utilised and every thread executed 200 requests.
 
 .. figure:: figures/FogOrion200_200.png
 
-**Senorio-4:** In the forth senorion we are taking 400 thread and every thread is executiong 200 request.
+
+The above graphs are representing **latency on y-axis and time on x-axis**. The above graphs depicts the fact that Fogflow broker is better in handling 40,000 thousand requests in an efficient manner when compared to Orion-Ld broker. With detailed anayalsis made on graphs as well as the supporting data, the fact that **Fogflow broker** handles **40,000** request in **50277 ms with low average latency** is an index which reflects the better performance of Fogflow broker over Orion-Ld Broker. **Orion-Ld broker** handles the same number of request within **greater time duration i.e. 79722 ms with higher average latency** than Fogflow.
+
+*Hence for this scenario Fogflow broker is a better performer than Orion-LD broker.*
+
+
+**Senorio-4:** In the fourth scenario 400 threads were utilised and every thread executed 200 requests.
 
 .. figure:: figures/FogOrion400_200.png
 
-**Senorio-5:** In the fifth senorion we are taking 500 thread and every thread is executiong 200 request.
+
+The above graphs are representing **latency on y-axis and time on x-axis**. The above graphs depicts the fact that Fogflow broker is better in handling 80,000 thousand requests in an efficient manner when compared to Orion-Ld broker. With detailed anayalsis made on graphs as well as the supporting data, the fact that **Fogflow broker** handles **80,000** request in **96543 ms with low average latency** is an index which reflects the better performance of Fogflow broker over Orion-Ld Broker. **Orion-Ld broker** handles the same number of request within **greater time duration i.e. 148627 ms with higher average latency** than Fogflow.
+
+*Hence for this scenario Fogflow broker is a better performer than Orion-LD broker.*
+
+
+**Senorio-5:** In the fifth scenario 500 threads were utilised and every thread executed 200 requests.
 
 .. figure:: figures/FogOrion500_200.png
 
+The above graphs are representing **latency on y-axis and time on x-axis**. The above graphs depicts the fact that Fogflow broker is better in handling 1,00,000 thousand requests in an efficient manner when compared to Orion-Ld broker. With detailed anayalsis made on graphs as well as the supporting data, the fact that **Fogflow broker** handles **1,00,000** request in **121852 ms with low average latency** is an index which reflects the better performance of Fogflow broker over Orion-Ld Broker. **Orion-Ld broker** handles the same number of request within **greater time duration i.e. 172785 ms with higher average latency** than Fogflow.
+
+*Hence for this scenario Fogflow broker is a better performer than Orion-LD broker.*
 
 
 **Performance comparision with orion-LD for upsert API:**
