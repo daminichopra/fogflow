@@ -2442,12 +2442,11 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			fiwareServicePath = "default"
 		}
-		fmt.Println(fiwareService, fiwareServicePath)
+		DEBUG.Println("fiwareService:",fiwareService,fiwareServicePath)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
 		var LDSubscribeCtxReq interface{}
 
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
-		fmt.Println("err", err)
 		if err != nil {
 			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2475,7 +2474,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
 
-		fmt.Println("err", err)
+		DEBUG.Println("err after Expand Subscription::",err)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
@@ -2490,7 +2489,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			sz := Serializer{}
 			deSerializedSubscription, err := sz.DeSerializeSubscription(resolved)
-
+			DEBUG.Println("err after deSerializedSubscription:",err)
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -2567,6 +2566,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Entities[key] = entity
 				}
 				tb.createSubscription(&deSerializedSubscription)
+				DEBUG.Println("Subscription Entities:",deSerializedSubscription.Entities)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")
 					for _, entity := range deSerializedSubscription.Entities {
@@ -2606,7 +2606,6 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
 
 	if AvailabilitySubID != "" {
-		//tb.createSubscriptionIdMappings(subReq.Id, AvailabilitySubID)
 		tb.subLinks_lock.Lock()
 		subID := subReq.Id
 		tb.main2Other[subID] = append(tb.main2Other[subID], AvailabilitySubID)

@@ -227,7 +227,7 @@ communications protocol to be used.
 	curl -L -X GET 'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001' \
    	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
-   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
+   	-H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \
         -H 'Content-Type: application/json' 
 
 Response
@@ -351,7 +351,7 @@ How to Fetch data from Orion-LD to FogFlow
 		  -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \
 		  -d ' {
                  	"type": "Subscription",
                 	"entities": [{
@@ -376,7 +376,7 @@ How to Fetch data from Orion-LD to FogFlow
 	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
 	-H 'Accept: application/ld+json' \
-	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+	-H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \
 	-H 'Content-Type: application/json' \
 	--data-raw '{
 
@@ -399,7 +399,7 @@ Use the CURL command to query entities of type "Device" from  FogFlow thinBroker
 		  -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
+		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' 
 
 Note: Replace localhost with the IP where fogflow thinbroker is running.
 Note: Replace the localhost with IP where Orion-LD broker is running and <fogflow_broker_IP> with the IP where the fogflow broker is running.
@@ -457,7 +457,7 @@ How to Push the Generated Result back to the IoT Agent
                   -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+                  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \
                   -d ' {
                         "type": "Subscription",
                         "entities": [{
