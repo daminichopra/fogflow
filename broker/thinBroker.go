@@ -830,7 +830,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
 		var notifyRequest interface{}
-
+		fmt.Println("reqBytes",string(reqBytes))
 		err := json.Unmarshal(reqBytes, &notifyRequest)
 		var fiwareService string
 		//var fiwareServicePath string
@@ -855,12 +855,14 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
 		Link := DEFAULT_CONTEXT
+		fmt.Println("+++++notifyEleDatamap++++",notifyEleDatamap)
 		for _, data := range notifyEleDatamap {
 			notifyData := data.(map[string]interface{})
 			notifyData["@context"] = context
 			expand, _ := tb.ExpandData(notifyData)
 			sz := Serializer{}
 			deSerializedEntity, err := sz.DeSerializeEntity(expand)
+			fmt.Println("err",err)
 			if err != nil {
 				continue
 			} else {
@@ -877,9 +879,11 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 				deSerializedEntity["@context"] = context
 				deSerializedEntity["createdAt"] = time.Now().String()
 				eid := deSerializedEntity["id"].(string)
+				fmt.Println("+++eid++++",eid)
 				tb.LDe2sub_lock.RLock()
 				subscriberList := tb.entityId2LDSubcriptions[eid]
 				tb.LDe2sub_lock.RUnlock()
+				fmt.Println("subscriberList",subscriberList)
 				if len(subscriberList) > 0 {
 					//send the notification to subscriber
 					go tb.LDNotifySubscribers(deSerializedEntity, false)
@@ -2454,6 +2458,7 @@ func (tb *ThinBroker) UpdateLdContext2RemoteSite(updateCtxReq map[string]interfa
 }
 
 func (tb *ThinBroker) handleLdExternalUpdateContext(updateCtxReq map[string]interface{}, link string) {
+	fmt.Println("++++updateCtxReq+++",updateCtxReq)
 	eid := getId(updateCtxReq)
 	brokerURL := tb.queryOwnerOfLDEntity(eid)
 	if brokerURL == tb.myProfile.MyURL {
