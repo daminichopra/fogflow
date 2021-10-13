@@ -50,7 +50,7 @@ var NGSILDclient = (function() {
    		'Accept': 'application/ld+json',
 		'fiware-service': 'openiot',
 		'fiware-servicepath': '/',
-		'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
   },
             data: updateCtxElements
         }).then( function(response){

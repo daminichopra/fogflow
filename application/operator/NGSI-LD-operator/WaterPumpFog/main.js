@@ -129,7 +129,6 @@ function publish(ctxUpdate) {
         console.log("=== broker is not configured for your update");
         return
     }
-
     NGSILDclient.updateContext(ctxUpdate).then(function(data) {
         console.log('======send update======');
         console.log(data);
