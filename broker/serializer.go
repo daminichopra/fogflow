@@ -5,6 +5,7 @@ import (
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
+	"fmt"
 )
 
 type Serializer struct{}
@@ -631,6 +632,17 @@ func (sz Serializer) getEntityType(typ interface{}) string {
 	return Etype[0].(string)
 }
 
+func getIDpettern(idPattern interface{}) string {
+	idPatternArray := idPattern.([]interface{})
+	value := idPatternArray[0].(map[string]interface{})
+	var res string
+	if val , ok := value["@value"]; ok == true {
+		res = val.(string)
+	} else {
+		res = ".*"
+	}
+	return res
+}
 func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	entity := EntityId{}
 	entitymap := entityobj.(map[string]interface{})
@@ -646,6 +658,10 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	} else if val, ok := entitymap["type"]; ok == true {
 		entity.Type = sz.getEntityType(val)
 	}
+	if val , ok := entitymap["https://uri.etsi.org/ngsi-ld/idPattern"] ; ok == true {
+		entity.ID = getIDpettern(val)
+		entity.IsPattern = true
+	}
 	return entity
 }
 
@@ -656,6 +672,8 @@ func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]Enti
 		err := errors.New("Zero length Entity List is not allowed")
 		return entitiesList, err
 	}
+	fmt.Println("entities")
+	fmt.Println(entities)
 	for _, val := range entities {
 		entity := sz.resolveEntity(val, fs)
 		if entity.ID == "" && entity.Type == "" {
@@ -671,6 +689,8 @@ func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]Enti
 func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQueryContextRequest, error) {
 	ngsildQueryContext := LDQueryContextRequest{}
 	expandedArray := expanded.([]interface{})
+	fmt.Println("expanded")
+	fmt.Println(expanded)
 	QueryData := expandedArray[0].(map[string]interface{})
 	typ, err := sz.getQueryType(QueryData)
 	if err != nil {
